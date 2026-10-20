@@ -1,0 +1,179 @@
+/* ==========================================================
+   Fork QR — tokens de diseño y estilos base
+   Mobile-first: todo se diseña para ~360-430px de ancho
+   y se adapta hacia arriba.
+   ========================================================== */
+
+:root {
+  /* Marca */
+  --violet: #8e27f5;
+  --violet-strong: #6d12cf; /* hover / presionado / texto violeta sobre claro */
+  --violet-soft: #f2e8fe; /* fondos suaves, placeholders */
+  --violet-line: #e2cffc;
+
+  /* Neutros (levemente teñidos de violeta) */
+  --ink: #1d1029;
+  --ink-2: #4a3f57;
+  --muted: #776d84;
+  --line: #ebe5f1;
+  --bg: #faf8fd;
+  --surface: #ffffff;
+
+  /* Estados */
+  --ok: #138a5b;
+  --ok-soft: #e3f5ed;
+  --warn: #b25e00;
+  --danger: #c4323c;
+
+  /* Tipografía */
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Escala tipográfica (base 16px, razón ~1.25) */
+  --fs-xs: 0.8125rem; /* 13 */
+  --fs-sm: 0.875rem; /* 14 */
+  --fs-md: 1rem; /* 16 */
+  --fs-lg: 1.25rem; /* 20 */
+  --fs-xl: 1.5625rem; /* 25 */
+  --fs-2xl: 2rem; /* 32 */
+
+  /* Espaciado y forma */
+  --gutter: 16px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+  --shadow-bar: 0 -6px 24px rgba(61, 15, 110, 0.12);
+  --shadow-float: 0 10px 30px rgba(61, 15, 110, 0.25);
+
+  /* Ancho máximo del contenido: en tablet/escritorio la carta
+     se presenta como una columna centrada, igual que en el teléfono. */
+  --content-max: 560px;
+
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 72px; /* deja espacio a la barra de categorías fija */
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  line-height: 1.15;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: var(--violet-strong);
+}
+
+:focus-visible {
+  outline: 3px solid var(--violet);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Botón principal reutilizable */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 54px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--violet);
+  color: #fff;
+  font-weight: 700;
+  font-size: var(--fs-md);
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.btn-primary:hover {
+  background: var(--violet-strong);
+}
+.btn-primary:active {
+  transform: scale(0.985);
+}
+.btn-primary:disabled {
+  background: #c9b8dc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 50px;
+  padding: 0 20px;
+  border: 1.5px solid var(--violet-line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--violet-strong);
+  font-weight: 700;
+  text-decoration: none;
+}
+.btn-secondary:hover {
+  border-color: var(--violet);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,41 @@
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--violet-line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--fs-sm);
+  text-decoration: none;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--violet);
+  box-shadow: 0 0 0 0 rgba(142, 39, 245, 0.5);
+  animation: latido 1.8s infinite;
+}
+
+@keyframes latido {
+  70% {
+    box-shadow: 0 0 0 8px rgba(142, 39, 245, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(142, 39, 245, 0);
+  }
+}
+
+.text {
+  flex: 1;
+}
+
+.cta {
+  color: var(--violet-strong);
+  font-weight: 700;
+}

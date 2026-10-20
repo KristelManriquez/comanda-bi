@@ -1,0 +1,50 @@
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.btn {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--violet-strong);
+}
+
+@media (hover: hover) {
+  .btn:hover:not(:disabled) {
+    background: var(--violet-soft);
+  }
+}
+
+.btn:disabled {
+  color: #cfc6d9;
+  cursor: not-allowed;
+}
+
+.value {
+  min-width: 2ch;
+  text-align: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.md .btn {
+  width: 46px;
+  height: 46px;
+}
+.md .value {
+  font-size: var(--fs-lg);
+}
+
+.sm .btn {
+  width: 36px;
+  height: 36px;
+}
+.sm .value {
+  font-size: var(--fs-md);
+}

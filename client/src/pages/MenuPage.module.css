@@ -1,0 +1,28 @@
+.main {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter) 120px; /* espacio para la barra del carrito */
+}
+
+.seccion {
+  padding-top: 28px;
+  scroll-margin-top: 40px; /* alto de la barra de categorías menos el padding superior */
+}
+
+.categoriaTitulo {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+}
+
+.lista {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pie {
+  margin-top: 32px;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  text-align: center;
+}

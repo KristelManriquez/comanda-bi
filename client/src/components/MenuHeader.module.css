@@ -1,0 +1,92 @@
+.header {
+  position: relative;
+  overflow: hidden;
+  background: var(--violet);
+  color: #fff;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+/* Trama sutil de "dientes de tenedor" en el fondo, recortada a la derecha */
+.inner::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  right: calc(-1 * var(--gutter) - 2px);
+  top: 18px;
+  width: 132px;
+  height: 200px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.1) 0 14px,
+    transparent 14px 32px
+  );
+  border-radius: 0 0 0 70px;
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 18px var(--gutter) 26px;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.welcome {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.mesa {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--violet-strong);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.mesa strong {
+  font-weight: 800;
+}
+
+.wordmark {
+  margin-top: 4px;
+  font-size: clamp(4.5rem, 24vw, 6.5rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+}
+
+.bajada {
+  margin-top: 10px;
+  max-width: 30ch;
+  font-size: var(--fs-md);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-xs);
+  opacity: 0.9;
+}
+
+.info li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}

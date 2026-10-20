@@ -1,0 +1,48 @@
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(250, 248, 253, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+
+.list {
+  display: flex;
+  gap: 8px;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 10px var(--gutter);
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.tab:hover {
+  border-color: var(--violet-line);
+}
+
+.active,
+.active:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
