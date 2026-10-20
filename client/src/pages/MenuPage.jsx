@@ -14,6 +14,30 @@ import Toast from '../components/Toast';
 import StatusScreen from '../components/StatusScreen';
 import styles from './MenuPage.module.css';
 
+/**
+ * Ejecuta `callback` cuando la ventana deja de desplazarse
+ * (150 ms sin eventos de scroll). Funciona en todos los navegadores,
+ * incluido Safari, que aún no soporta el evento "scrollend".
+ * Devuelve una función para cancelar la espera.
+ */
+function alTerminarScroll(callback) {
+  let timer;
+  const terminar = () => {
+    window.removeEventListener('scroll', reiniciar);
+    callback();
+  };
+  const reiniciar = () => {
+    clearTimeout(timer);
+    timer = setTimeout(terminar, 150);
+  };
+  window.addEventListener('scroll', reiniciar, { passive: true });
+  reiniciar();
+  return () => {
+    clearTimeout(timer);
+    window.removeEventListener('scroll', reiniciar);
+  };
+}
+
 export default function MenuPage() {
   const { mesa, token } = useOutletContext();
   const { agregar, cantidadDeProducto, cantidadTotal } = useCart();
@@ -26,7 +50,11 @@ export default function MenuPage() {
   const [pedidoActivo, setPedidoActivo] = useState(null);
 
   const seccionesRef = useRef({});
-  const scrollManual = useRef(false);
+  const barraRef = useRef(null);
+  const scrollProgramado = useRef(false);
+  const cancelarEspera = useRef(null);
+
+  const altoBarra = () => barraRef.current?.offsetHeight ?? 0;
 
   /* ---------- Carga de datos ---------- */
   const cargarCarta = useCallback(() => {
@@ -58,31 +86,65 @@ export default function MenuPage() {
     return () => clearInterval(id);
   }, [token]);
 
-  /* ---------- Resaltar la categoría visible al hacer scroll ---------- */
+  /* ---------- Resaltar la categoría visible al hacer scroll ----------
+     La categoría activa es la última sección cuyo inicio ya pasó por
+     debajo de la barra de categorías. Se calcula como máximo una vez
+     por frame (requestAnimationFrame) para no afectar la fluidez. */
   useEffect(() => {
     if (!carta) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (scrollManual.current) return;
-        const visible = entries.filter((e) => e.isIntersecting);
-        if (visible.length > 0) {
-          setCategoriaActiva(Number(visible[0].target.dataset.categoria));
-        }
-      },
-      { rootMargin: '-72px 0px -65% 0px' }
-    );
-    Object.values(seccionesRef.current).forEach((el) => el && observer.observe(el));
-    return () => observer.disconnect();
+    let frame = 0;
+
+    const calcular = () => {
+      frame = 0;
+      // Mientras la página se desplaza sola hacia una categoría tocada, no recalcular
+      if (scrollProgramado.current) return;
+
+      const limite = altoBarra() + 48;
+      let actual = carta.categorias[0]?.id;
+      for (const c of carta.categorias) {
+        const el = seccionesRef.current[c.id];
+        if (el && el.getBoundingClientRect().top <= limite) actual = c.id;
+      }
+      // Al llegar al final de la página se marca la última categoría,
+      // aunque su título no alcance a subir hasta la barra.
+      const alFinal =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+      if (alFinal) actual = carta.categorias.at(-1)?.id;
+
+      setCategoriaActiva((prev) => (prev === actual ? prev : actual));
+    };
+
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(calcular);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(frame);
+    };
   }, [carta]);
 
+  // Limpia cualquier espera pendiente al salir de la página
+  useEffect(() => () => cancelarEspera.current?.(), []);
+
   const irACategoria = (id) => {
+    const seccion = seccionesRef.current[id];
+    if (!seccion) return;
+
     setCategoriaActiva(id);
-    scrollManual.current = true;
-    seccionesRef.current[id]?.scrollIntoView({
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-      block: 'start',
+    scrollProgramado.current = true;
+
+    // Posición exacta: inicio de la sección justo bajo la barra fija
+    const destino = seccion.getBoundingClientRect().top + window.scrollY - altoBarra();
+    const reducirMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: Math.max(0, destino), behavior: reducirMovimiento ? 'auto' : 'smooth' });
+
+    // Se vuelve a seguir el scroll del usuario cuando el desplazamiento termina
+    cancelarEspera.current?.();
+    cancelarEspera.current = alTerminarScroll(() => {
+      scrollProgramado.current = false;
     });
-    setTimeout(() => (scrollManual.current = false), 700);
   };
 
   /* ---------- Acciones ---------- */
@@ -118,7 +180,12 @@ export default function MenuPage() {
   return (
     <>
       <MenuHeader restaurante={carta.restaurante} mesa={mesa} />
-      <CategoryTabs categorias={carta.categorias} activa={categoriaActiva} onSelect={irACategoria} />
+      <CategoryTabs
+        ref={barraRef}
+        categorias={carta.categorias}
+        activa={categoriaActiva}
+        onSelect={irACategoria}
+      />
 
       <main className={styles.main}>
         <ActiveOrderBanner pedido={pedidoActivo} to={`/mesa/${token}/pedido/${pedidoActivo?.id}`} />

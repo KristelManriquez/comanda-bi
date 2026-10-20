@@ -6,7 +6,6 @@
 
 .seccion {
   padding-top: 28px;
-  scroll-margin-top: 40px; /* alto de la barra de categorías menos el padding superior */
 }
 
 .categoriaTitulo {

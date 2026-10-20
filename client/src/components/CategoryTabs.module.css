@@ -9,6 +9,7 @@
 }
 
 .list {
+  position: relative; /* para que offsetLeft de cada pestaña se mida desde la lista */
   display: flex;
   gap: 8px;
   max-width: var(--content-max);
