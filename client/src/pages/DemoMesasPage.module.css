@@ -66,3 +66,33 @@
 .inactiva {
   opacity: 0.5;
 }
+
+.subtitulo {
+  margin-top: 40px;
+  font-size: var(--fs-xl);
+}
+.personal {
+  margin-top: 16px;
+}
+.herramientas {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.herramientas p {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--muted);
+}
+.herramientas div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.herramientas small {
+  color: var(--ok);
+  font-weight: 600;
+}

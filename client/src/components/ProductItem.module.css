@@ -67,7 +67,7 @@
   color: #fff;
   font-weight: 800;
   font-size: var(--fs-md);
-  box-shadow: 0 4px 12px rgba(142, 39, 245, 0.35);
+  box-shadow: 0 4px 12px rgba(106, 13, 217, 0.35);
   transition: transform 0.12s ease, background 0.15s ease;
 }
 

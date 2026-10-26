@@ -37,7 +37,7 @@ export const categorias = [
   { id: 6, nombre: 'Tragos', orden: 6, icono: 'copa' },
 ];
 
-export const productos = [
+const productosBase = [
   // Entradas
   {
     id: 101,
@@ -260,3 +260,29 @@ export const productos = [
     destacado: false,
   },
 ];
+
+/**
+ * Costo unitario de cada producto (insumos), usado por el dashboard
+ * para calcular el margen de contribución en la ingeniería de menú.
+ */
+const COSTOS = {
+  101: 1200, 102: 5600, 103: 1100, 104: 1300,
+  201: 4100, 202: 6900, 203: 6100, 204: 3900, 205: 5200,
+  301: 3600, 302: 3700, 303: 1500,
+  401: 1100, 402: 900, 403: 1400,
+  501: 800, 502: 900, 503: 600,
+  601: 1500, 602: 1600, 603: 1800,
+};
+
+export const productos = productosBase.map((p) => ({ ...p, costo: COSTOS[p.id] }));
+
+/** Usuarios del personal (en la BD real la contraseña se guarda con bcrypt). */
+export const usuarios = [
+  { id: 1, nombre: 'Valentina Soto', correo: 'admin@fork.cl', rol: 'administrador', activo: true },
+  { id: 2, nombre: 'Camila Rojas', correo: 'camila@fork.cl', rol: 'garzon', activo: true },
+  { id: 3, nombre: 'Diego Fuentes', correo: 'diego@fork.cl', rol: 'garzon', activo: true },
+  { id: 4, nombre: 'Pantalla de cocina', correo: 'cocina@fork.cl', rol: 'cocina', activo: true },
+];
+
+/** Contraseña de demostración para todos los usuarios simulados. */
+export const PASSWORD_DEMO = 'fork2026';

@@ -6,10 +6,10 @@
 
 :root {
   /* Marca */
-  --violet: #8e27f5;
-  --violet-strong: #6d12cf; /* hover / presionado / texto violeta sobre claro */
-  --violet-soft: #f2e8fe; /* fondos suaves, placeholders */
-  --violet-line: #e2cffc;
+  --violet: #6a0dd9;
+  --violet-strong: #4e08a6; /* hover / presionado / texto violeta sobre claro */
+  --violet-soft: #efe6fc; /* fondos suaves, placeholders */
+  --violet-line: #d9c4f6;
 
   /* Neutros (levemente teñidos de violeta) */
   --ink: #1d1029;
@@ -26,8 +26,8 @@
   --danger: #c4323c;
 
   /* Tipografía */
-  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
-  --font-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body: 'Figtree Variable', 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* Escala tipográfica (base 16px, razón ~1.25) */
   --fs-xs: 0.8125rem; /* 13 */

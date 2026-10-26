@@ -1,35 +1,29 @@
 /**
  * Estados de un pedido. Deben coincidir con los valores que
  * se guarden en la columna pedido.estado de PostgreSQL.
+ *
+ * - solicitado: el comensal envió el pedido; la cocina lo ve en su pantalla.
+ * - recibido:   el garzón entregó el pedido en la mesa y lo marcó como recibido.
+ *
+ * La cocina solo visualiza los pedidos (no manipula el dispositivo
+ * mientras cocina); el garzón es quien cambia el estado.
  */
 export const ESTADOS_PEDIDO = {
+  SOLICITADO: 'solicitado',
   RECIBIDO: 'recibido',
-  EN_PREPARACION: 'en_preparacion',
-  LISTO: 'listo',
-  ENTREGADO: 'entregado',
 };
 
 /** Orden y textos que ve el comensal en el seguimiento. */
 export const PASOS_PEDIDO = [
   {
+    estado: ESTADOS_PEDIDO.SOLICITADO,
+    titulo: 'Solicitado',
+    detalle: 'Tu pedido llegó a la cocina y se está preparando.',
+  },
+  {
     estado: ESTADOS_PEDIDO.RECIBIDO,
     titulo: 'Recibido',
-    detalle: 'Tu pedido llegó al garzón y a la cocina.',
-  },
-  {
-    estado: ESTADOS_PEDIDO.EN_PREPARACION,
-    titulo: 'En preparación',
-    detalle: 'La cocina está preparando tu pedido.',
-  },
-  {
-    estado: ESTADOS_PEDIDO.LISTO,
-    titulo: 'Listo',
-    detalle: 'Tu pedido está listo y va en camino a tu mesa.',
-  },
-  {
-    estado: ESTADOS_PEDIDO.ENTREGADO,
-    titulo: 'Entregado',
-    detalle: '¡Que lo disfrutes!',
+    detalle: 'El garzón entregó tu pedido en la mesa. ¡Que lo disfrutes!',
   },
 ];
 

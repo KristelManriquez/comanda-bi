@@ -1,0 +1,91 @@
+/* Estilos compartidos por las páginas de administración */
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.cabecera h1 {
+  font-size: var(--fs-2xl);
+}
+.bajada {
+  color: var(--muted);
+  margin-top: 4px;
+  max-width: 70ch;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+  min-width: 0;
+}
+.cardTitulo {
+  font-size: var(--fs-lg);
+  margin-bottom: 4px;
+}
+.cardBajada {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  margin-bottom: 16px;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+.tabla th {
+  text-align: left;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.tabla td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.tabla tr:last-child td {
+  border-bottom: 0;
+}
+.num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.tablaScroll {
+  overflow-x: auto;
+}
+
+.chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  background: var(--violet-soft);
+  color: var(--violet-strong);
+  white-space: nowrap;
+}
+.chipGris {
+  background: #efedf2;
+  color: var(--ink-2);
+}
+.chipOk {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.nota {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}

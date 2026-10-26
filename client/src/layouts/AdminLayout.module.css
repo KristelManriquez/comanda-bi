@@ -1,0 +1,140 @@
+.shell {
+  min-height: 100dvh;
+  background: #f6f3fa;
+}
+
+.sidebar {
+  background: #1d1029;
+  color: #e9e1f3;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+.marca {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 8px;
+}
+.logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.8rem;
+  letter-spacing: -0.04em;
+  color: #fff;
+}
+.producto {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #b9a3e6;
+}
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #d4c9e2;
+  font-weight: 600;
+  text-decoration: none;
+}
+.nav a:hover {
+  background: #2c1c3d;
+  color: #fff;
+}
+.nav a.activo {
+  background: var(--violet);
+  color: #fff;
+}
+.grupo {
+  display: none;
+}
+.usuario {
+  display: none;
+}
+
+.contenido {
+  min-width: 0;
+  padding: 20px var(--gutter) 40px;
+}
+
+@media (min-width: 960px) {
+  .shell {
+    display: grid;
+    grid-template-columns: 248px 1fr;
+    background: linear-gradient(to right, #1d1029 248px, #f6f3fa 248px);
+  }
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    padding: 24px 16px;
+  }
+  .nav {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    flex: 1;
+  }
+  .grupo {
+    display: block;
+    margin: 20px 12px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8f7fa3;
+  }
+  .usuario {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 8px 0;
+    border-top: 1px solid #33233f;
+  }
+  .avatar {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: var(--violet);
+    color: #fff;
+    font-weight: 700;
+  }
+  .usuarioTexto {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+  }
+  .usuarioTexto strong {
+    color: #fff;
+    font-size: var(--fs-sm);
+  }
+  .usuarioTexto small {
+    color: #8f7fa3;
+    font-size: var(--fs-xs);
+  }
+  .salir {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid #3b2b4d;
+    background: transparent;
+    color: #b9aac9;
+  }
+  .contenido {
+    padding: 28px 36px 48px;
+  }
+}

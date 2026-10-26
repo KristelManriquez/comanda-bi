@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useOutletContext, useParams } from 'react-router-dom';
-import { getPedido } from '../services/api';
+import { getPedido, suscribir } from '../services/api';
 import { PASOS_PEDIDO, indiceEstado, ESTADOS_PEDIDO } from '../utils/pedido';
 import { formatCLP, formatHora } from '../utils/format';
 import PageHeader from '../components/PageHeader';
@@ -17,7 +17,8 @@ export default function OrderPage() {
   const [pedido, setPedido] = useState(null);
   const [error, setError] = useState(null);
 
-  // Hoy se consulta cada 3 s; con el backend, el cambio llegará por Socket.IO.
+  // El cambio de estado llega al instante cuando el garzón marca el pedido
+  // (hoy por store.suscribir; con el backend, por Socket.IO).
   useEffect(() => {
     let activo = true;
     const cargar = () =>
@@ -25,9 +26,11 @@ export default function OrderPage() {
         .then((p) => activo && setPedido(p))
         .catch((e) => activo && setError(e));
     cargar();
-    const id = setInterval(cargar, 3000);
+    const desuscribir = suscribir(cargar);
+    const id = setInterval(cargar, 5000);
     return () => {
       activo = false;
+      desuscribir();
       clearInterval(id);
     };
   }, [pedidoId]);
@@ -47,7 +50,7 @@ export default function OrderPage() {
   if (!pedido) return <StatusScreen cargando titulo="Buscando tu pedido" />;
 
   const actual = indiceEstado(pedido.estado);
-  const entregado = pedido.estado === ESTADOS_PEDIDO.ENTREGADO;
+  const entregado = pedido.estado === ESTADOS_PEDIDO.RECIBIDO;
 
   return (
     <>

@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { cargarPedidosDemo, reiniciarDemo } from '../services/staffApi';
 import { mesas } from '../data/mockData';
 import styles from './DemoMesasPage.module.css';
 
@@ -8,6 +10,16 @@ import styles from './DemoMesasPage.module.css';
  * a /mesa/:token desde el código impreso.
  */
 export default function DemoMesasPage() {
+  const [aviso, setAviso] = useState(null);
+  const cargar = () => {
+    cargarPedidosDemo();
+    setAviso('Se cargaron 5 mesas con pedidos de ejemplo.');
+  };
+  const reiniciar = () => {
+    reiniciarDemo();
+    setAviso('Se borraron los pedidos, cuentas y eventos de la demostración.');
+  };
+
   return (
     <main className={styles.main}>
       <p className={styles.mark}>fork</p>
@@ -25,6 +37,25 @@ export default function DemoMesasPage() {
           </li>
         ))}
       </ul>
+
+      <h2 className={styles.subtitulo}>Vistas del personal</h2>
+      <p className={styles.intro}>Garzón, cocina y administración ingresan con su usuario y rol.</p>
+      <Link to="/personal" className={`btn-primary ${styles.personal}`}>
+        Ir al acceso del personal
+      </Link>
+
+      <div className={styles.herramientas}>
+        <p>Datos de demostración</p>
+        <div>
+          <button type="button" className="btn-secondary" onClick={cargar}>
+            Cargar pedidos de ejemplo
+          </button>
+          <button type="button" className="btn-secondary" onClick={reiniciar}>
+            Reiniciar demo
+          </button>
+        </div>
+        {aviso && <small role="status">{aviso}</small>}
+      </div>
     </main>
   );
 }

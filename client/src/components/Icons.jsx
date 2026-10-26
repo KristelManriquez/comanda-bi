@@ -151,3 +151,77 @@ export function CategoryIcon({ name, size = 40, ...props }) {
     </svg>
   );
 }
+
+/* ---------- Íconos de las vistas del personal ---------- */
+
+export function IconChart(props) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" {...base} {...props}>
+      <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+    </svg>
+  );
+}
+
+export function IconMenuBook(props) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" {...base} {...props}>
+      <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5zM12 4h6.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H12M7 8h2M7 11h2M15 8h2M15 11h2" />
+    </svg>
+  );
+}
+
+export function IconQr(props) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" {...base} {...props}>
+      <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2M14 18v2h2M18 18h2v2" />
+    </svg>
+  );
+}
+
+export function IconUsers(props) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" {...base} {...props}>
+      <path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 6.5M18.5 14a6 6 0 0 1 3 6" />
+    </svg>
+  );
+}
+
+export function IconLogout(props) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" {...base} {...props}>
+      <path d="M15 4h3.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H15M10 16l-4-4 4-4M6 12h10" />
+    </svg>
+  );
+}
+
+export function IconChef(props) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" {...base} {...props}>
+      <path d="M7 14.5V20h10v-5.5M7 14.5A4 4 0 0 1 6.5 6.6 4.5 4.5 0 0 1 12 4a4.5 4.5 0 0 1 5.5 2.6A4 4 0 0 1 17 14.5zM7 17h10" />
+    </svg>
+  );
+}
+
+export function IconTray(props) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" {...base} {...props}>
+      <path d="M3 17h18M5 17a7 7 0 0 1 14 0M12 8V6M10 6h4M2 20h20" />
+    </svg>
+  );
+}
+
+export function IconTable(props) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" {...base} {...props}>
+      <path d="M3 9h18M5 9v10M19 9v10M8 9V6h8v3" />
+    </svg>
+  );
+}
+
+export function IconAlert(props) {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" {...base} {...props}>
+      <path d="M12 3l9.5 17h-19zM12 10v4.5M12 17.5v.01" />
+    </svg>
+  );
+}

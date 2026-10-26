@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { getCarta, getPedidosDeMesa } from '../services/api';
+import { getCarta, getPedidosDeMesa, registrarEvento, suscribir, TIPOS_EVENTO } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { ESTADOS_PEDIDO } from '../utils/pedido';
 import MenuHeader from '../components/MenuHeader';
@@ -62,9 +62,10 @@ export default function MenuPage() {
       .then((data) => {
         setCarta(data);
         setCategoriaActiva(data.categorias[0]?.id ?? null);
+        registrarEvento(TIPOS_EVENTO.VER_CARTA, { mesaId: mesa.id });
       })
       .catch(setError);
-  }, []);
+  }, [mesa.id]);
 
   useEffect(() => {
     cargarCarta();
@@ -75,15 +76,20 @@ export default function MenuPage() {
     cargarCarta();
   };
 
-  // Pedido en curso de esta mesa (luego llegará por Socket.IO en vez de consultar cada 5 s)
+  // Pedido en curso de esta mesa. Se actualiza al instante cuando el garzón
+  // lo marca como recibido (hoy por store.suscribir; con el backend, por Socket.IO).
   useEffect(() => {
     const revisar = () =>
       getPedidosDeMesa(token).then((pedidos) =>
-        setPedidoActivo(pedidos.find((p) => p.estado !== ESTADOS_PEDIDO.ENTREGADO) ?? null)
+        setPedidoActivo(pedidos.find((p) => p.estado !== ESTADOS_PEDIDO.RECIBIDO) ?? null)
       );
     revisar();
+    const desuscribir = suscribir(revisar);
     const id = setInterval(revisar, 5000);
-    return () => clearInterval(id);
+    return () => {
+      desuscribir();
+      clearInterval(id);
+    };
   }, [token]);
 
   /* ---------- Resaltar la categoría visible al hacer scroll ----------
@@ -150,8 +156,14 @@ export default function MenuPage() {
   /* ---------- Acciones ---------- */
   const mostrarToast = (texto) => setToast({ id: Date.now(), texto });
 
+  const abrirProducto = (producto) => {
+    setProductoAbierto(producto);
+    registrarEvento(TIPOS_EVENTO.VER_DETALLE, { mesaId: mesa.id, productoId: producto.id });
+  };
+
   const agregarAlPedido = (producto, cantidad = 1, nota = '') => {
     agregar(producto, cantidad, nota);
+    registrarEvento(TIPOS_EVENTO.AGREGAR, { mesaId: mesa.id, productoId: producto.id });
     mostrarToast(cantidad > 1 ? `${cantidad} × ${producto.nombre} agregados` : `${producto.nombre} agregado`);
   };
 
@@ -190,7 +202,7 @@ export default function MenuPage() {
       <main className={styles.main}>
         <ActiveOrderBanner pedido={pedidoActivo} to={`/mesa/${token}/pedido/${pedidoActivo?.id}`} />
 
-        <FeaturedStrip productos={destacados} iconoDe={iconoDe} onOpen={setProductoAbierto} />
+        <FeaturedStrip productos={destacados} iconoDe={iconoDe} onOpen={abrirProducto} />
 
         {carta.categorias.map((categoria) => (
           <section
@@ -210,7 +222,7 @@ export default function MenuPage() {
                   producto={producto}
                   icono={categoria.icono}
                   enCarrito={cantidadDeProducto(producto.id)}
-                  onOpen={setProductoAbierto}
+                  onOpen={abrirProducto}
                   onQuickAdd={(p) => agregarAlPedido(p)}
                 />
               ))}

@@ -13,9 +13,10 @@ fork-qr/
 │       ├── components/      Piezas reutilizables de interfaz
 │       ├── context/         Estado global (carrito)
 │       ├── data/            Datos simulados mientras no existe el backend
-│       ├── layouts/         MesaLayout: valida el QR de la mesa
-│       ├── pages/           Pantallas (carta, carrito, seguimiento)
-│       ├── services/        api.js: único punto de acceso a datos
+│       ├── hooks/           useEnVivo: recarga datos al cambiar
+│       ├── layouts/         MesaLayout (QR de la mesa) y AdminLayout
+│       ├── pages/           Comensal, staff/ (login, garzón, cocina) y admin/ (dashboard)
+│       ├── services/        api.js, staffApi.js, biApi.js y store.js
 │       └── utils/           Formato de pesos, estados del pedido
 │
 └── server/                  Backend (Node.js + Express, API REST)
@@ -53,24 +54,37 @@ npm run dev
 
 ## Estado actual
 
-**Módulo comensal (listo, con datos simulados)**
+Todo el frontend funciona con datos simulados guardados en `localStorage`, así que las vistas pueden abrirse en pestañas distintas del mismo navegador y comparten los pedidos en tiempo real. Al conectar el backend solo cambian los archivos de `client/src/services/`.
 
-- Entrada por QR: `/mesa/:token`. Un token inválido muestra un aviso.
-- Carta por categorías con barra fija que sigue el scroll.
-- Sección "Lo más pedido" (luego se alimentará con datos del BI).
-- Ficha de producto con nota para la cocina y cantidad.
-- Productos agotados visibles pero no seleccionables.
-- Carrito guardado por mesa (sobrevive a recargas).
-- Envío del pedido y seguimiento de estado: recibido, en preparación, listo, entregado.
+**Comensal** (`/mesa/:token`, teléfono, sin registro)
 
-Mientras no exista el backend, `client/src/services/api.js` simula la API y la cocina (el estado avanza solo con el tiempo). Al conectar el backend solo cambia ese archivo.
+- Carta por categorías, ficha de producto con notas, carrito por mesa.
+- Envío del pedido y seguimiento: solicitado → recibido (se actualiza al instante).
+- Registro anónimo de eventos (ver carta, ver detalle, agregar, enviar) para el embudo.
+
+**Personal** (`/personal`, inicio de sesión por rol)
+
+| Rol | Ruta | Qué hace |
+|---|---|---|
+| Garzón | `/garzon` | Marca pedidos como recibidos, ve las mesas y cierra cuentas con pago presencial. |
+| Cocina | `/cocina` | Pantalla de solo lectura con los pedidos solicitados y su tiempo de espera. |
+| Administración | `/admin` | Dashboard BI, carta (precio, costo, disponibilidad), mesas con QR y usuarios. |
+
+Usuarios de demostración (contraseña `fork2026`): `camila@fork.cl` (garzón), `cocina@fork.cl` (cocina) y `admin@fork.cl` (administración). La página de inicio tiene accesos rápidos y botones para **cargar pedidos de ejemplo** o **reiniciar la demo**.
+
+**Dashboard de inteligencia de negocio** (`/admin`)
+
+- Ventas: ventas, cuentas, pedidos, ticket promedio y tiempo de entrega (con variación frente al periodo anterior), ventas por día, por franja horaria y por categoría, y productos más y menos vendidos.
+- Embudo de la carta: global y por producto, con alertas de productos con mucho interés y poca conversión.
+- Ingeniería de menú (Kasavana y Smith) ampliada con la conversión del embudo.
+- Usa 12 semanas de operación simulada de Fork (`client/src/data/historialSimulado.js`) más lo registrado hoy en la app.
 
 **Próximos pasos**
 
-1. Modelo de datos en PostgreSQL y endpoints reales de carta y pedidos.
-2. Módulo garzón/cocina con pedidos en tiempo real (Socket.IO).
-3. Módulo de administración (login, CRUD de carta, mesas y usuarios, generación de QR).
-4. Dashboard de inteligencia de negocio.
+1. Modelo de datos en PostgreSQL y endpoints reales (carta, pedidos, cuentas, eventos, dashboard).
+2. Autenticación con JWT y bcrypt en el backend.
+3. Tiempo real con Socket.IO en lugar de `localStorage`.
+4. Formularios para crear productos, mesas y usuarios.
 
 ## Mesas de prueba
 

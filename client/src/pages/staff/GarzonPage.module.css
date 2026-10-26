@@ -1,0 +1,342 @@
+.page {
+  min-height: 100dvh;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  background: var(--bg);
+  padding-bottom: calc(32px + var(--safe-bottom));
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px var(--gutter) 16px;
+  background: var(--violet);
+  color: #fff;
+}
+.header h1 {
+  font-size: var(--fs-xl);
+}
+.rol {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.8);
+}
+.salir {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #fff;
+}
+
+.tabs {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 10px var(--gutter);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink-2);
+  font-weight: 700;
+}
+.tabs .tabActiva {
+  background: var(--violet-soft);
+  color: var(--violet-strong);
+}
+.badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--violet);
+  color: #fff;
+  font-size: var(--fs-xs);
+}
+
+.main {
+  padding: 16px var(--gutter);
+}
+.cargando {
+  color: var(--muted);
+}
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pedido {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pedidoHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.mesaChip {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fs-lg);
+}
+.tiempo {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  font-weight: 600;
+}
+.tarde {
+  color: var(--warn);
+}
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.items li {
+  font-weight: 500;
+}
+.items em {
+  display: block;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+  font-style: italic;
+}
+
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 48px 16px;
+}
+.vacio p {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+}
+.vacio small {
+  color: var(--muted);
+  max-width: 30ch;
+}
+.vacioIcono {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.mesas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.mesa {
+  width: 100%;
+  min-height: 132px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  text-align: left;
+}
+.mesa:disabled {
+  cursor: default;
+}
+.mesaNumero {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2rem;
+  line-height: 1;
+}
+.mesaEstado {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--muted);
+}
+.mesaTotal {
+  margin-top: auto;
+  font-weight: 700;
+}
+.mesaPendiente {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--warn);
+}
+.ocupada {
+  border-color: var(--violet-line);
+  background: var(--violet-soft);
+}
+.ocupada .mesaEstado {
+  color: var(--violet-strong);
+}
+.ocupada:hover {
+  border-color: var(--violet);
+}
+.inactiva {
+  opacity: 0.55;
+}
+
+/* Hoja inferior con la cuenta de la mesa */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(29, 16, 41, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.sheet {
+  width: 100%;
+  max-width: var(--content-max);
+  max-height: 88dvh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 20px var(--gutter) calc(20px + var(--safe-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.sheetHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.sheetHead h2 {
+  font-size: var(--fs-xl);
+}
+.sheetHead p {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.cerrarSheet {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--bg);
+}
+.cuentaPedidos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cuentaPedidos > li {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.cuentaPedidoHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--ink-2);
+  margin-bottom: 6px;
+}
+.chipOk,
+.chipPend {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+.chipOk {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.chipPend {
+  background: #fff1dc;
+  color: var(--warn);
+}
+.cuentaLinea {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-sm);
+  padding: 2px 0;
+}
+.cuentaTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+  font-weight: 700;
+}
+.cuentaTotal strong {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+}
+.aviso {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: #fff1dc;
+  color: #6b3a00;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.error {
+  color: var(--danger);
+  font-weight: 600;
+}
+.confirmar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.confirmarAcciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
