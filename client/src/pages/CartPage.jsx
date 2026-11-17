@@ -106,7 +106,7 @@ export default function CartPage() {
 
       <div className={styles.footer}>
         <button type="button" className="btn-primary" onClick={enviar} disabled={enviando}>
-          {enviando ? 'Enviando pedido…' : `Enviar pedido de ${formatCLP(total)}`}
+          {enviando ? 'Solicitando pedido…' : `Solicitar pedido de ${formatCLP(total)}`}
         </button>
       </div>
     </>

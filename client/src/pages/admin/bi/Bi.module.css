@@ -269,7 +269,7 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: var(--violet);
+  background: #5f1ac6; /* serie de gráficos */
 }
 .rankCuerpo small {
   color: var(--muted);
@@ -317,7 +317,7 @@
 .etapaBarra span {
   display: block;
   height: 100%;
-  background: var(--violet);
+  background: #5f1ac6; /* serie de gráficos */
   border-radius: 8px;
 }
 
@@ -390,7 +390,7 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: var(--violet);
+  background: #5f1ac6; /* serie de gráficos */
 }
 .convBarra .convBaja {
   background: #eb6834;
@@ -411,8 +411,8 @@
   color: #fff;
 }
 .clase1 {
-  background: #d9c4f6;
-  color: #3d0a7f;
+  background: #d2c4ec;
+  color: #2c0766;
 }
 .clase2 {
   background: var(--violet-soft);

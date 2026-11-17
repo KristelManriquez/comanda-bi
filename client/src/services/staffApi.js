@@ -8,13 +8,14 @@
  *   PATCH /api/pedidos/:id            { estado: 'recibido' }
  *   GET   /api/mesas/estado
  *   POST  /api/cuentas/:id/cerrar
- *   PATCH /api/productos/:id          { disponible }
+ * La administración del catálogo (RF09 y RF10) está en catalogo.js.
  */
 
-import { mesas, usuarios, PASSWORD_DEMO, productos } from '../data/mockData';
+import { mesas as mesasIniciales, productos as productosIniciales } from '../data/mockData';
+import { mesasActuales, productosActuales, usuariosActuales, usuariosConClave } from './catalogo';
 import { ESTADOS_PEDIDO } from '../utils/pedido';
-import { COLECCIONES, leer, escribir, siguienteId, reiniciar } from './store';
-import { esperar, productosVigentes } from './api';
+import { COLECCIONES, leer, escribir, siguienteId, reiniciar, reiniciarOperacion } from './store';
+import { esperar } from './api';
 
 export { suscribir } from './store';
 
@@ -54,11 +55,13 @@ export function getSesion() {
 /** POST /api/auth/login -> { token, usuario }. El backend real compara con bcrypt y firma un JWT. */
 export async function login(correo, password) {
   await esperar(500);
-  const usuario = usuarios.find((u) => u.correo === correo.trim().toLowerCase() && u.activo);
-  if (!usuario || password !== PASSWORD_DEMO) {
+  const encontrado = usuariosConClave().find((u) => u.correo === correo.trim().toLowerCase() && u.activo);
+  if (!encontrado || password !== encontrado.clave) {
     // Mensaje genérico: no revela cuál de los dos datos falló
     throw new Error('Correo o contraseña incorrectos');
   }
+  // eslint-disable-next-line no-unused-vars
+  const { clave, ...usuario } = encontrado;
   const sesion = { token: `demo.${usuario.id}.${Date.now()}`, usuario };
   try {
     sessionStorage.setItem(SESION_KEY, JSON.stringify(sesion));
@@ -109,7 +112,7 @@ export async function marcarRecibido(pedidoId, usuario) {
 export async function getMesasConCuenta() {
   const cuentas = leer(COLECCIONES.CUENTAS);
   const pedidos = leer(COLECCIONES.PEDIDOS);
-  return mesas.map((mesa) => {
+  return mesasActuales().map((mesa) => {
     const cuenta = cuentas.find((c) => c.mesa_id === mesa.id && c.estado === 'abierta') ?? null;
     const suyos = cuenta ? pedidos.filter((p) => p.cuenta_id === cuenta.id).sort((a, b) => a.id - b.id) : [];
     return {
@@ -139,28 +142,20 @@ export async function cerrarCuenta(cuentaId, usuario) {
   return cuenta;
 }
 
-/* ---------------- Administración ---------------- */
+/* ---------------- Administración (lecturas) ---------------- */
 
 export async function getProductosAdmin() {
-  await esperar(200);
-  return productosVigentes();
-}
-
-/** PATCH /api/productos/:id { disponible } */
-export async function setDisponible(productoId, disponible) {
-  const cambios = leer(COLECCIONES.DISPONIBILIDAD, {});
-  cambios[productoId] = disponible;
-  escribir(COLECCIONES.DISPONIBILIDAD, cambios);
+  return productosActuales();
 }
 
 export async function getUsuarios() {
-  await esperar(150);
-  return usuarios;
+  return usuariosActuales();
 }
 
+/** Mesas con la indicación de si tienen una cuenta abierta (no se pueden desactivar). */
 export async function getMesas() {
-  await esperar(150);
-  return mesas;
+  const abiertas = new Set(leer(COLECCIONES.CUENTAS).filter((c) => c.estado === 'abierta').map((c) => c.mesa_id));
+  return mesasActuales().map((m) => ({ ...m, cuentaAbierta: abiertas.has(m.id) }));
 }
 
 /* ---------------- Datos de demostración ---------------- */
@@ -170,9 +165,12 @@ export async function getMesas() {
  * para mostrar la cocina y la vista del garzón con movimiento.
  */
 export function cargarPedidosDemo() {
-  reiniciar();
+  // Mantiene la carta, las mesas y los usuarios que haya editado el administrador
+  reiniciarOperacion();
   const hace = (min) => new Date(Date.now() - min * 60000).toISOString();
-  const nombre = (id) => productos.find((p) => p.id === id);
+  const catalogo = productosActuales();
+  const nombre = (id) => catalogo.find((p) => p.id === id) ?? productosIniciales.find((p) => p.id === id);
+  const mesas = mesasActuales();
   const linea = (id, cantidad, nota = '') => ({
     producto_id: id,
     nombre: nombre(id).nombre,
@@ -206,7 +204,7 @@ export function cargarPedidosDemo() {
   const pedidos = [];
   const historial = [];
   plan.forEach((m) => {
-    const mesa = mesas.find((x) => x.numero === m.mesa);
+    const mesa = mesas.find((x) => x.numero === m.mesa) ?? mesasIniciales.find((x) => x.numero === m.mesa);
     const cuenta = {
       id: 501 + cuentas.length,
       mesa_id: mesa.id,

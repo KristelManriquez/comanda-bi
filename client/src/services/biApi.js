@@ -12,7 +12,16 @@
  * la prueba de validación de datos compara estos valores con consultas de control.
  */
 
-import { productos, categorias } from '../data/mockData';
+import { productos as productosIniciales, categorias as categoriasIniciales } from '../data/mockData';
+import { categoriasActuales, productosActuales } from './catalogo';
+
+/** Une el catálogo actual con los productos y categorías del historial (aunque se hayan retirado). */
+function union(actuales, iniciales) {
+  const ids = new Set(actuales.map((x) => x.id));
+  return [...actuales, ...iniciales.filter((x) => !ids.has(x.id))];
+}
+const catalogoProductos = () => union(productosActuales(), productosIniciales);
+const catalogoCategorias = () => union(categoriasActuales(), categoriasIniciales);
 import { getHistorialSimulado, claveDia } from '../data/historialSimulado';
 import { COLECCIONES, leer } from './store';
 import { TIPOS_EVENTO } from './api';
@@ -123,7 +132,7 @@ export function getIndicadoresVentas(desde, hasta) {
   const franjas = {};
   for (let h = 12; h <= 23; h++) franjas[h] = 0;
   // Ventas y unidades por producto y por categoría
-  const porProducto = Object.fromEntries(productos.map((p) => [p.id, { ...p, unidades: 0, ventas: 0 }]));
+  const porProducto = Object.fromEntries(catalogoProductos().map((p) => [p.id, { ...p, unidades: 0, ventas: 0 }]));
   pedidosR.forEach((p) => {
     const h = new Date(p.creado_en).getHours();
     franjas[h] = (franjas[h] || 0) + p.total;
@@ -135,7 +144,7 @@ export function getIndicadoresVentas(desde, hasta) {
     });
   });
   const listaProductos = Object.values(porProducto);
-  const porCategoria = categorias.map((c) => ({
+  const porCategoria = catalogoCategorias().map((c) => ({
     id: c.id,
     nombre: c.nombre,
     ventas: listaProductos.filter((p) => p.categoria_id === c.id).reduce((s, p) => s + p.ventas, 0),
@@ -158,7 +167,7 @@ export function getIndicadoresVentas(desde, hasta) {
 export function getEmbudo(desde, hasta) {
   const { embudoDiario } = fuentes();
   const total = { sesiones: 0, detalle: 0, agregar: 0, enviar: 0 };
-  const porProducto = Object.fromEntries(productos.map((p) => [p.id, [0, 0, 0]]));
+  const porProducto = Object.fromEntries(catalogoProductos().map((p) => [p.id, [0, 0, 0]]));
   Object.entries(embudoDiario).forEach(([clave, r]) => {
     const [a, m, d] = clave.split('-').map(Number);
     if (!enRango(new Date(a, m - 1, d), desde, hasta)) return;
@@ -179,7 +188,7 @@ export function getEmbudo(desde, hasta) {
     { etapa: 'Agregó al pedido', valor: total.agregar },
     { etapa: 'Envió el pedido', valor: total.enviar },
   ];
-  const productosEmbudo = productos
+  const productosEmbudo = catalogoProductos()
     .map((p) => {
       const [detalle, agregar, enviar] = porProducto[p.id];
       return {

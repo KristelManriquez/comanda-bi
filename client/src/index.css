@@ -6,10 +6,10 @@
 
 :root {
   /* Marca */
-  --violet: #6a0dd9;
-  --violet-strong: #4e08a6; /* hover / presionado / texto violeta sobre claro */
-  --violet-soft: #efe6fc; /* fondos suaves, placeholders */
-  --violet-line: #d9c4f6;
+  --violet: #4b0c9e;
+  --violet-strong: #36087a; /* hover / presionado / texto violeta sobre claro */
+  --violet-soft: #eee8f8; /* fondos suaves, placeholders */
+  --violet-line: #d2c4ec;
 
   /* Neutros (levemente teñidos de violeta) */
   --ink: #1d1029;
@@ -42,8 +42,8 @@
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 24px;
-  --shadow-bar: 0 -6px 24px rgba(61, 15, 110, 0.12);
-  --shadow-float: 0 10px 30px rgba(61, 15, 110, 0.25);
+  --shadow-bar: 0 -6px 24px rgba(54, 8, 122, 0.12);
+  --shadow-float: 0 10px 30px rgba(54, 8, 122, 0.25);
 
   /* Ancho máximo del contenido: en tablet/escritorio la carta
      se presenta como una columna centrada, igual que en el teléfono. */

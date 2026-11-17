@@ -68,9 +68,9 @@ Todo el frontend funciona con datos simulados guardados en `localStorage`, así 
 |---|---|---|
 | Garzón | `/garzon` | Marca pedidos como recibidos, ve las mesas y cierra cuentas con pago presencial. |
 | Cocina | `/cocina` | Pantalla de solo lectura con los pedidos solicitados y su tiempo de espera. |
-| Administración | `/admin` | Dashboard BI, carta (precio, costo, disponibilidad), mesas con QR y usuarios. |
+| Administración | `/admin` | Dashboard BI; carta (crear, editar, retirar productos y categorías, con precio, costo y disponibilidad); mesas (crear, activar o desactivar, regenerar y descargar el QR); usuarios (crear y editar con su rol). |
 
-Usuarios de demostración (contraseña `fork2026`): `camila@fork.cl` (garzón), `cocina@fork.cl` (cocina) y `admin@fork.cl` (administración). La página de inicio tiene accesos rápidos y botones para **cargar pedidos de ejemplo** o **reiniciar la demo**.
+Usuarios de demostración (contraseña `fork2026`): `camila@fork.cl` (garzón), `cocina@fork.cl` (cocina) y `admin@fork.cl` (administración). La página de inicio tiene accesos rápidos y botones para **cargar pedidos de ejemplo** (mantiene la carta, mesas y usuarios editados) o **reiniciar la demo** (vuelve todo a los datos iniciales).
 
 **Dashboard de inteligencia de negocio** (`/admin`)
 
@@ -84,7 +84,7 @@ Usuarios de demostración (contraseña `fork2026`): `camila@fork.cl` (garzón), 
 1. Modelo de datos en PostgreSQL y endpoints reales (carta, pedidos, cuentas, eventos, dashboard).
 2. Autenticación con JWT y bcrypt en el backend.
 3. Tiempo real con Socket.IO en lugar de `localStorage`.
-4. Formularios para crear productos, mesas y usuarios.
+4. Subida de fotos de los productos.
 
 ## Mesas de prueba
 

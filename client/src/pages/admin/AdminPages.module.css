@@ -95,8 +95,13 @@
 }
 .mesaInfo {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 6px;
+}
+.mesaInfo h2 {
+  white-space: nowrap;
 }
 .mesaInfo h2 {
   font-size: var(--fs-lg);
@@ -124,4 +129,107 @@
   background: var(--violet-soft);
   color: var(--violet-strong);
   font-weight: 700;
+}
+
+/* ---------- Acciones ---------- */
+.botonPrimario {
+  border: 0;
+  background: var(--violet);
+  color: #fff;
+  font-weight: 700;
+  padding: 11px 16px;
+  border-radius: 12px;
+}
+.botonPrimario:hover {
+  background: var(--violet-strong);
+}
+.botonesCabecera {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.botonTexto {
+  border: 0;
+  background: transparent;
+  color: var(--violet-strong);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  padding: 6px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.botonTexto:hover {
+  background: var(--violet-soft);
+}
+.botonTexto:disabled {
+  color: #b8b0c2;
+  background: transparent;
+  cursor: not-allowed;
+}
+.botonPeligro {
+  color: var(--danger);
+}
+.botonPeligro:hover {
+  background: #fdecee;
+}
+.cabeceraCategoria {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.cabeceraCategoria h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.cabeceraCategoria small {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--muted);
+}
+.vacia {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  padding: 8px 12px 4px;
+}
+.retirado td {
+  color: var(--muted);
+}
+.aviso {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 60;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  box-shadow: 0 8px 24px rgba(29, 16, 41, 0.3);
+}
+.avisoError {
+  background: var(--danger);
+}
+.chips {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-left: 6px;
+}
+.mesaAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 -8px;
 }

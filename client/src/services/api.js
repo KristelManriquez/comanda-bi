@@ -16,7 +16,8 @@
  * Los componentes no cambian, porque solo conocen estas funciones.
  */
 
-import { restaurante, mesas, categorias, productos } from '../data/mockData';
+import { restaurante } from '../data/mockData';
+import { categoriasActuales, mesasActuales, productosActuales } from './catalogo';
 import { ESTADOS_PEDIDO } from '../utils/pedido';
 import { COLECCIONES, leer, escribir, siguienteId } from './store';
 
@@ -29,16 +30,15 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 // Simula la latencia de red para poder ver los estados de carga.
 export const esperar = (ms = 350) => new Promise((r) => setTimeout(r, ms));
 
-/** Productos con la disponibilidad que haya cambiado el administrador. */
+/** Productos que están en la carta (los retirados por el administrador no se muestran). */
 export function productosVigentes() {
-  const cambios = leer(COLECCIONES.DISPONIBILIDAD, {});
-  return productos.map((p) => (p.id in cambios ? { ...p, disponible: cambios[p.id] } : p));
+  return productosActuales().filter((p) => p.activo !== false);
 }
 
 /** GET /api/mesas/:token -> valida el token del QR */
 export async function getMesaPorToken(token) {
   await esperar(200);
-  const mesa = mesas.find((m) => m.token_qr === token && m.activa);
+  const mesa = mesasActuales().find((m) => m.token_qr === token && m.activa);
   if (!mesa) {
     const error = new Error('Mesa no encontrada');
     error.status = 404;
@@ -53,14 +53,14 @@ export async function getCarta() {
   const vigentes = productosVigentes();
   return {
     restaurante,
-    categorias: categorias
-      .slice()
-      .sort((a, b) => a.orden - b.orden)
+    categorias: categoriasActuales()
       .map((c) => ({
         ...c,
         // eslint-disable-next-line no-unused-vars
         productos: vigentes.filter((p) => p.categoria_id === c.id).map(({ costo, ...p }) => p),
-      })),
+      }))
+      // Una categoría sin productos no se muestra al comensal
+      .filter((c) => c.productos.length > 0),
   };
 }
 
@@ -207,7 +207,7 @@ export async function getPedido(id) {
 /** GET /api/mesas/:token/pedidos -> pedidos de la cuenta abierta de la mesa */
 export async function getPedidosDeMesa(tokenMesa) {
   await esperar(150);
-  const mesa = mesas.find((m) => m.token_qr === tokenMesa);
+  const mesa = mesasActuales().find((m) => m.token_qr === tokenMesa);
   const cuenta = leer(COLECCIONES.CUENTAS).find((c) => c.mesa_id === mesa?.id && c.estado === 'abierta');
   if (!cuenta) return [];
   return leer(COLECCIONES.PEDIDOS)

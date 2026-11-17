@@ -14,12 +14,19 @@ const PREFIJO = 'fork:v2:';
 const EVENTO_CAMBIO = 'fork:cambio';
 
 export const COLECCIONES = {
+  // Operación del día
   PEDIDOS: 'pedidos',
   CUENTAS: 'cuentas',
   HISTORIAL: 'historial',
   EVENTOS: 'eventos',
-  DISPONIBILIDAD: 'disponibilidad',
+  // Catálogo que administra el restaurante (RF09 y RF10)
+  CATEGORIAS: 'categorias',
+  PRODUCTOS: 'productos',
+  MESAS: 'mesas',
+  USUARIOS: 'usuarios',
 };
+
+const OPERACION = [COLECCIONES.PEDIDOS, COLECCIONES.CUENTAS, COLECCIONES.HISTORIAL, COLECCIONES.EVENTOS];
 
 const memoria = {};
 
@@ -60,9 +67,8 @@ export function suscribir(callback) {
   };
 }
 
-/** Borra toda la operación simulada (pedidos, cuentas, eventos y cambios de disponibilidad). */
-export function reiniciar() {
-  Object.values(COLECCIONES).forEach((c) => {
+function borrar(colecciones) {
+  colecciones.forEach((c) => {
     delete memoria[c];
     try {
       localStorage.removeItem(PREFIJO + c);
@@ -71,4 +77,14 @@ export function reiniciar() {
     }
   });
   window.dispatchEvent(new CustomEvent(EVENTO_CAMBIO, { detail: '*' }));
+}
+
+/** Borra pedidos, cuentas, historial y eventos; mantiene la carta, las mesas y los usuarios. */
+export function reiniciarOperacion() {
+  borrar(OPERACION);
+}
+
+/** Vuelve todo a los datos iniciales de Fork, incluido el catálogo. */
+export function reiniciar() {
+  borrar([...Object.values(COLECCIONES), 'disponibilidad']);
 }

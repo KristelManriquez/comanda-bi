@@ -1,0 +1,149 @@
+.dialogo {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  padding: 0;
+  border: 0;
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 24px 64px rgba(29, 16, 41, 0.28);
+  overflow: auto;
+}
+.dialogo::backdrop {
+  background: rgba(29, 16, 41, 0.45);
+}
+.cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 22px 24px 0;
+}
+.cabecera h2 {
+  font-size: var(--fs-xl);
+}
+.cabecera p {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  margin-top: 4px;
+}
+.cerrar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--bg);
+}
+.cuerpo {
+  padding: 20px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.pie {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px 22px;
+  border-top: 1px solid var(--line);
+}
+.pie button {
+  width: auto;
+  min-height: 46px;
+}
+
+.campo {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.medio {
+  flex: 1 1 calc(50% - 8px);
+}
+.etiqueta {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.campo input,
+.campo select,
+.campo textarea {
+  font: inherit;
+  color: var(--ink);
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.campo textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+  outline: none;
+  border-color: var(--violet);
+  box-shadow: 0 0 0 3px var(--violet-soft);
+}
+.ayuda {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+.error {
+  color: var(--danger);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+.errorGeneral {
+  flex: 1 1 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: #fdecee;
+  color: #8f1f28;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.casilla {
+  flex: 1 1 calc(50% - 8px);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.casilla input {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--violet);
+}
+.casilla strong {
+  display: block;
+  font-size: var(--fs-sm);
+}
+.casilla small {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+.vistaPrevia {
+  flex: 1 1 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+.vistaPrevia strong {
+  color: var(--ink);
+}

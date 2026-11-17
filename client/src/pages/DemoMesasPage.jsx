@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { cargarPedidosDemo, reiniciarDemo } from '../services/staffApi';
-import { mesas } from '../data/mockData';
+import { mesasActuales } from '../services/catalogo';
 import styles from './DemoMesasPage.module.css';
 
 /**
@@ -11,13 +11,15 @@ import styles from './DemoMesasPage.module.css';
  */
 export default function DemoMesasPage() {
   const [aviso, setAviso] = useState(null);
+  const [mesas, setMesas] = useState(mesasActuales);
   const cargar = () => {
     cargarPedidosDemo();
     setAviso('Se cargaron 5 mesas con pedidos de ejemplo.');
   };
   const reiniciar = () => {
     reiniciarDemo();
-    setAviso('Se borraron los pedidos, cuentas y eventos de la demostración.');
+    setMesas(mesasActuales());
+    setAviso('Se restauraron los datos iniciales de Fork (carta, mesas, usuarios y pedidos).');
   };
 
   return (

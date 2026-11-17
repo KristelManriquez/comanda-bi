@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { login, INICIO_ROL, ROLES, NOMBRE_ROL } from '../../services/staffApi';
-import { PASSWORD_DEMO, usuarios } from '../../data/mockData';
+import { usuariosConClave } from '../../services/catalogo';
 import { IconChart, IconChef, IconTray } from '../../components/Icons';
 import styles from './LoginPage.module.css';
 
@@ -38,10 +38,15 @@ export default function LoginPage() {
   };
 
   const accesoRapido = (rol) => {
-    const u = usuarios.find((x) => x.rol === rol);
+    // Primer usuario activo con ese rol (solo para la demostración)
+    const u = usuariosConClave().find((x) => x.rol === rol && x.activo);
+    if (!u) {
+      setError('No hay usuarios activos con ese rol.');
+      return;
+    }
     setCorreo(u.correo);
-    setPassword(PASSWORD_DEMO);
-    entrar(u.correo, PASSWORD_DEMO);
+    setPassword(u.clave);
+    entrar(u.correo, u.clave);
   };
 
   return (

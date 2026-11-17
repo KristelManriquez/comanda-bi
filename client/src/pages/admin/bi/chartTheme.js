@@ -1,8 +1,8 @@
 /** Parámetros visuales comunes de los gráficos del dashboard (Recharts). */
 export const COLOR = {
-  serie: '#6a0dd9', // violeta de la marca: serie principal
-  serieSuave: '#efe6fc',
-  alerta: '#eb6834', // segunda identidad (validada con el violeta: ΔE CVD 33)
+  serie: '#5f1ac6', // violeta de la marca, aclarado un paso para que los gráficos cumplan la banda de luminosidad
+  serieSuave: '#eee8f8',
+  alerta: '#eb6834', // segunda identidad (validada con el violeta: ΔE CVD 32,6)
   grilla: '#ebe5f1',
   eje: '#776d84',
   tinta: '#1d1029',
