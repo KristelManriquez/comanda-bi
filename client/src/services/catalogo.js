@@ -1,7 +1,7 @@
 /**
  * Catálogo del restaurante: categorías, productos, mesas y usuarios.
  *
- * Parte con los datos iniciales de Fork (mockData) y guarda en store.js
+ * Parte con los datos iniciales de El 10 (mockData) y guarda en store.js
  * los cambios que hace el administrador, para que se vean al instante en
  * la carta de las mesas, en la vista del garzón y en el dashboard.
  *

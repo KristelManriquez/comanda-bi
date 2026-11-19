@@ -10,8 +10,8 @@
  * pestaña (evento "storage") o la misma pestaña cambia los datos.
  */
 
-const PREFIJO = 'fork:v2:';
-const EVENTO_CAMBIO = 'fork:cambio';
+const PREFIJO = 'el10:v1:';
+const EVENTO_CAMBIO = 'el10:cambio';
 
 export const COLECCIONES = {
   // Operación del día
@@ -84,7 +84,7 @@ export function reiniciarOperacion() {
   borrar(OPERACION);
 }
 
-/** Vuelve todo a los datos iniciales de Fork, incluido el catálogo. */
+/** Vuelve todo a los datos iniciales de El 10, incluido el catálogo. */
 export function reiniciar() {
   borrar([...Object.values(COLECCIONES), 'disponibilidad']);
 }

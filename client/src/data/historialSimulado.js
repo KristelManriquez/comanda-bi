@@ -1,6 +1,11 @@
 /**
- * Historial simulado de 12 semanas de operación de Fork, para que el
- * dashboard tenga datos con sentido sin un restaurante real (riesgo R3).
+ * Historial simulado de 12 semanas de eventos de El 10, para que el
+ * dashboard tenga datos con sentido mientras El 10 no cuenta con un
+ * historial de ventas propio (riesgo R3).
+ *
+ * Incluye a propósito productos con alto interés y baja conversión
+ * (Veggie y Papas cheddar y tocino), para verificar que el embudo y
+ * la ingeniería de menú los identifiquen (OE4).
  *
  * Se genera de forma determinista (semilla fija), simulando sesiones
  * anónimas de comensales: cada sesión ve la carta, abre el detalle de
@@ -22,31 +27,29 @@ export const SEMANAS_HISTORIAL = 12;
    add   = probabilidad de agregarlo después de ver el detalle
    quick = probabilidad de agregarlo directo desde la lista */
 const COMPORTAMIENTO = {
-  101: { det: 0.3, add: 0.7, quick: 0.1 },
-  102: { det: 0.3, add: 0.17, quick: 0.01 },
-  103: { det: 0.12, add: 0.55, quick: 0.08 },
-  104: { det: 0.1, add: 0.5, quick: 0.06 },
-  201: { det: 0.26, add: 0.62, quick: 0.05 },
-  202: { det: 0.24, add: 0.58, quick: 0.04 },
-  203: { det: 0.21, add: 0.27, quick: 0.02 },
-  204: { det: 0.12, add: 0.5, quick: 0.03 },
-  205: { det: 0.1, add: 0.42, quick: 0.02 },
-  301: { det: 0.22, add: 0.6, quick: 0.08 },
-  302: { det: 0.12, add: 0.5, quick: 0.05 },
-  303: { det: 0.2, add: 0.72, quick: 0.14 },
+  101: { det: 0.32, add: 0.7, quick: 0.12 },
+  102: { det: 0.26, add: 0.62, quick: 0.08 },
+  103: { det: 0.14, add: 0.6, quick: 0.08 },
+  104: { det: 0.16, add: 0.5, quick: 0.05 },
+  105: { det: 0.14, add: 0.55, quick: 0.05 },
+  106: { det: 0.24, add: 0.14, quick: 0.01 }, // mucho interés, pocos pedidos
+  201: { det: 0.28, add: 0.68, quick: 0.1 },
+  202: { det: 0.18, add: 0.6, quick: 0.06 },
+  203: { det: 0.14, add: 0.55, quick: 0.05 },
+  301: { det: 0.1, add: 0.7, quick: 0.35 },
+  302: { det: 0.22, add: 0.18, quick: 0.02 }, // mucho interés, pocos pedidos
+  303: { det: 0.08, add: 0.5, quick: 0.05 },
+  304: { det: 0.1, add: 0.55, quick: 0.06 },
   401: { det: 0.08, add: 0.5, quick: 0.04 },
-  402: { det: 0.1, add: 0.55, quick: 0.05 },
-  403: { det: 0.07, add: 0.38, quick: 0.02 },
-  501: { det: 0.05, add: 0.6, quick: 0.35 },
-  502: { det: 0.1, add: 0.55, quick: 0.15 },
-  503: { det: 0.03, add: 0.5, quick: 0.08 },
-  601: { det: 0.18, add: 0.6, quick: 0.18 },
-  602: { det: 0.14, add: 0.5, quick: 0.08 },
-  603: { det: 0.1, add: 0.5, quick: 0.1 },
+  402: { det: 0.07, add: 0.45, quick: 0.04 },
+  501: { det: 0.05, add: 0.6, quick: 0.4 },
+  502: { det: 0.03, add: 0.5, quick: 0.1 },
+  503: { det: 0.08, add: 0.5, quick: 0.1 },
 };
 
-// Cuentas por día según el día de la semana (domingo = 0)
-const CUENTAS_POR_DIA = [22, 13, 14, 16, 19, 27, 31];
+// Cuentas por día según el día de la semana (domingo = 0).
+// El 10 atiende solo en eventos: viernes, sábado y domingo.
+const CUENTAS_POR_DIA = [34, 0, 0, 0, 0, 22, 40];
 
 function generador(semilla) {
   let a = semilla;
@@ -106,7 +109,7 @@ export function getHistorialSimulado() {
         abierta_en: inicio.toISOString(),
         cerrada_en: null,
         total: 0,
-        garzon_id: rnd() < 0.55 ? 2 : 3,
+        garzon_id: 1, // el administrador atiende las mesas
       };
       const sesiones = rnd() < 0.6 ? 1 : 2;
       let ultimo = inicio.getTime();

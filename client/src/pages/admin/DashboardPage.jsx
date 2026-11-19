@@ -65,7 +65,7 @@ export default function DashboardPage() {
         <div>
           <h1>Dashboard</h1>
           <p className={a.bajada}>
-            Fork · 12 semanas de operación simulada más los pedidos registrados hoy en la aplicación.
+            El 10 · 12 semanas de eventos simulados más los pedidos registrados hoy en la aplicación.
           </p>
         </div>
       </header>

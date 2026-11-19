@@ -45,7 +45,7 @@ export default function CocinaPage({ usuario }) {
           </span>
           <div>
             <h1>Cocina</h1>
-            <p>Fork · pedidos solicitados en tiempo real</p>
+            <p>El 10 · pedidos solicitados en tiempo real</p>
           </div>
         </div>
         <div className={styles.estado}>

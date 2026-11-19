@@ -77,14 +77,14 @@ export default function MenuPage() {
   };
 
   // Pedido en curso de esta mesa. Se actualiza al instante cuando el garzón
-  // lo marca como recibido (hoy por store.suscribir; con el backend, por Socket.IO).
+  // lo marca como recibido (en la demo, por store.js; con el servidor, por Socket.IO).
   useEffect(() => {
     const revisar = () =>
       getPedidosDeMesa(token).then((pedidos) =>
         setPedidoActivo(pedidos.find((p) => p.estado !== ESTADOS_PEDIDO.RECIBIDO) ?? null)
       );
     revisar();
-    const desuscribir = suscribir(revisar);
+    const desuscribir = suscribir(revisar, { mesa: token });
     const id = setInterval(revisar, 5000);
     return () => {
       desuscribir();

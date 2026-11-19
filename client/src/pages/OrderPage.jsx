@@ -18,22 +18,22 @@ export default function OrderPage() {
   const [error, setError] = useState(null);
 
   // El cambio de estado llega al instante cuando el garzón marca el pedido
-  // (hoy por store.suscribir; con el backend, por Socket.IO).
+  // (en la demo, por store.js; con el servidor, por Socket.IO).
   useEffect(() => {
     let activo = true;
     const cargar = () =>
-      getPedido(pedidoId)
+      getPedido(pedidoId, token)
         .then((p) => activo && setPedido(p))
         .catch((e) => activo && setError(e));
     cargar();
-    const desuscribir = suscribir(cargar);
+    const desuscribir = suscribir(cargar, { mesa: token });
     const id = setInterval(cargar, 5000);
     return () => {
       activo = false;
       desuscribir();
       clearInterval(id);
     };
-  }, [pedidoId]);
+  }, [pedidoId, token]);
 
   const cartaUrl = `/mesa/${token}`;
 

@@ -51,7 +51,7 @@ export default function GarzonPage({ usuario }) {
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <p className={styles.rol}>Garzón · Fork</p>
+          <p className={styles.rol}>Garzón · <span className={styles.marca}>El 10</span></p>
           <h1>Hola, {usuario.nombre.split(' ')[0]}</h1>
         </div>
         <button type="button" className={styles.salir} onClick={salir}>

@@ -1,17 +1,10 @@
 /**
  * Capa de acceso a datos del comensal.
  *
- * HOY: trabaja con datos simulados (mockData) y guarda pedidos, cuentas
- * y eventos en localStorage (ver store.js).
- *
- * MAÑANA: cada función se reemplaza por una llamada a la API REST,
- * por ejemplo:
- *
- *   export async function getCarta() {
- *     const res = await fetch(`${API_URL}/carta`);
- *     if (!res.ok) throw new Error('No se pudo cargar la carta');
- *     return res.json();
- *   }
+ * Funciona de dos formas (ver http.js):
+ *  - Con servidor (MODO_API): cada función llama a la API REST, que guarda
+ *    los pedidos en PostgreSQL.
+ *  - Demo: datos simulados (mockData) guardados en localStorage (store.js).
  *
  * Los componentes no cambian, porque solo conocen estas funciones.
  */
@@ -21,11 +14,9 @@ import { categoriasActuales, mesasActuales, productosActuales } from './catalogo
 import { ESTADOS_PEDIDO } from '../utils/pedido';
 import { COLECCIONES, leer, escribir, siguienteId } from './store';
 
-export { suscribir } from './store';
+import { http, MODO_API } from './http';
 
-// Cuando exista el backend: import.meta.env.VITE_API_URL (ej. http://localhost:4000/api)
-// eslint-disable-next-line no-unused-vars
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+export { suscribir } from './tiempoReal';
 
 // Simula la latencia de red para poder ver los estados de carga.
 export const esperar = (ms = 350) => new Promise((r) => setTimeout(r, ms));
@@ -37,6 +28,7 @@ export function productosVigentes() {
 
 /** GET /api/mesas/:token -> valida el token del QR */
 export async function getMesaPorToken(token) {
+  if (MODO_API) return http(`/mesas/${encodeURIComponent(token)}`);
   await esperar(200);
   const mesa = mesasActuales().find((m) => m.token_qr === token && m.activa);
   if (!mesa) {
@@ -49,6 +41,10 @@ export async function getMesaPorToken(token) {
 
 /** GET /api/carta -> restaurante + categorías con sus productos (sin costo) */
 export async function getCarta() {
+  if (MODO_API) {
+    const { categorias } = await http('/carta');
+    return { restaurante, categorias };
+  }
   await esperar();
   const vigentes = productosVigentes();
   return {
@@ -71,7 +67,7 @@ export async function getCarta() {
  * No se asocia a ningún dato personal del comensal (Ley N.° 21.719).
  */
 function sesionAnonima() {
-  const KEY = 'fork:sesion-anonima';
+  const KEY = 'el10:sesion-anonima';
   try {
     let id = sessionStorage.getItem(KEY);
     if (!id) {
@@ -92,7 +88,22 @@ export const TIPOS_EVENTO = {
 };
 
 /** POST /api/eventos -> registra una interacción del comensal con la carta. */
+let ultimoEnviado = null;
+
 export function registrarEvento(tipo, { mesaId = null, productoId = null } = {}) {
+  if (MODO_API) {
+    const sesion = sesionAnonima();
+    const clave = `${tipo}:${productoId}`;
+    // Evita duplicar el mismo evento si se dispara dos veces seguidas
+    if (ultimoEnviado?.clave === clave && Date.now() - ultimoEnviado.en < 1500) return;
+    ultimoEnviado = { clave, en: Date.now() };
+    // No se espera la respuesta: un evento perdido no debe afectar al comensal
+    http('/eventos', {
+      method: 'POST',
+      body: { sesion_id: sesion, tipo, mesa_id: mesaId, producto_id: productoId },
+    }).catch(() => {});
+    return;
+  }
   const eventos = leer(COLECCIONES.EVENTOS);
   const sesion = sesionAnonima();
   // Evita duplicar el mismo evento si se dispara dos veces seguidas (doble clic, recarga del efecto)
@@ -145,6 +156,17 @@ function cuentaAbiertaDe(mesa, cuentas) {
  * en el precio que envía el cliente) y los copia a detalle_pedido.
  */
 export async function crearPedido({ tokenMesa, items }) {
+  if (MODO_API) {
+    const pedido = await http('/pedidos', {
+      method: 'POST',
+      body: {
+        token_mesa: tokenMesa,
+        items: items.map(({ producto_id, cantidad, nota }) => ({ producto_id, cantidad, nota })),
+      },
+    });
+    pedido.detalle.forEach((d) => registrarEvento(TIPOS_EVENTO.ENVIAR, { mesaId: pedido.mesa_id, productoId: d.producto_id }));
+    return pedido;
+  }
   await esperar(600);
   const mesa = await getMesaPorToken(tokenMesa);
   const vigentes = productosVigentes();
@@ -192,8 +214,9 @@ export async function crearPedido({ tokenMesa, items }) {
   return pedido;
 }
 
-/** GET /api/pedidos/:id */
-export async function getPedido(id) {
+/** GET /api/mesas/:token/pedidos/:id -> solo si el pedido es de esa mesa */
+export async function getPedido(id, tokenMesa) {
+  if (MODO_API) return http(`/mesas/${encodeURIComponent(tokenMesa)}/pedidos/${Number(id)}`);
   await esperar(150);
   const pedido = leer(COLECCIONES.PEDIDOS).find((p) => p.id === Number(id));
   if (!pedido) {
@@ -206,6 +229,7 @@ export async function getPedido(id) {
 
 /** GET /api/mesas/:token/pedidos -> pedidos de la cuenta abierta de la mesa */
 export async function getPedidosDeMesa(tokenMesa) {
+  if (MODO_API) return http(`/mesas/${encodeURIComponent(tokenMesa)}/pedidos`);
   await esperar(150);
   const mesa = mesasActuales().find((m) => m.token_qr === tokenMesa);
   const cuenta = leer(COLECCIONES.CUENTAS).find((c) => c.mesa_id === mesa?.id && c.estado === 'abierta');

@@ -56,7 +56,7 @@ function leerCarrito(storageKey) {
 }
 
 export function CartProvider({ tokenMesa, children }) {
-  const storageKey = `fork:carrito:${tokenMesa}`;
+  const storageKey = `el10:carrito:${tokenMesa}`;
   const [lineas, dispatch] = useReducer(cartReducer, storageKey, leerCarrito);
 
   useEffect(() => {
