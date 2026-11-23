@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import {
-  categoriasActuales,
   eliminarCategoria,
+  getCatalogoAdmin,
   guardarCategoria,
   guardarProducto,
   moverCategoria,
-  productosActuales,
   setActivoProducto,
   setDisponibleProducto,
 } from '../../services/catalogo';
@@ -18,7 +17,7 @@ import a from './Admin.module.css';
 import styles from './AdminPages.module.css';
 import f from './ui/Formulario.module.css';
 
-const cargar = () => ({ categorias: categoriasActuales(), productos: productosActuales() });
+const cargar = getCatalogoAdmin;
 
 const PRODUCTO_NUEVO = { nombre: '', descripcion: '', categoria_id: '', precio: '', costo: '', disponible: true, destacado: false };
 
@@ -35,10 +34,10 @@ function ProductoForm({ inicial, categorias, onClose, onGuardado }) {
   const costo = Number(datos.costo);
   const margenValido = precio > 0 && costo >= 0 && costo < precio;
 
-  const guardar = (e) => {
+  const guardar = async (e) => {
     e.preventDefault();
     try {
-      guardarProducto(datos);
+      await guardarProducto(datos);
       onGuardado(datos.id ? `«${datos.nombre.trim()}» actualizado` : `«${datos.nombre.trim()}» agregado a la carta`);
     } catch (err) {
       setError(err);
@@ -114,10 +113,10 @@ function ProductoForm({ inicial, categorias, onClose, onGuardado }) {
 function CategoriaForm({ inicial, onClose, onGuardado }) {
   const [nombre, setNombre] = useState(inicial?.nombre ?? '');
   const [error, setError] = useState(null);
-  const guardar = (e) => {
+  const guardar = async (e) => {
     e.preventDefault();
     try {
-      guardarCategoria({ id: inicial?.id, nombre });
+      await guardarCategoria({ id: inicial?.id, nombre });
       onGuardado(inicial ? 'Categoría actualizada' : `Categoría «${nombre.trim()}» creada`);
     } catch (err) {
       setError(err.message);
@@ -149,7 +148,7 @@ function CategoriaForm({ inicial, onClose, onGuardado }) {
 
 /** Gestión de la carta (RF09): categorías y productos con precio, costo y disponibilidad. */
 export default function CartaAdminPage() {
-  const [datos] = useEnVivo(cargar);
+  const [datos, recargar] = useEnVivo(cargar);
   const [editando, setEditando] = useState(null); // { tipo: 'producto' | 'categoria', valor }
   const [aviso, avisar] = useAviso();
 
@@ -163,14 +162,16 @@ export default function CartaAdminPage() {
   const guardado = (texto) => {
     setEditando(null);
     avisar(texto);
+    recargar();
   };
-  const intentar = (accion, texto) => {
+  const intentar = async (accion, texto) => {
     try {
-      accion();
+      await accion();
       if (texto) avisar(texto);
     } catch (err) {
       avisar(err.message, true);
     }
+    recargar();
   };
 
   return (
@@ -207,14 +208,14 @@ export default function CartaAdminPage() {
                   {c.nombre} <small>{suyos.length} productos</small>
                 </h2>
                 <div className={styles.acciones}>
-                  <button type="button" className={styles.botonTexto} disabled={i === 0} onClick={() => moverCategoria(c.id, -1)}>
+                  <button type="button" className={styles.botonTexto} disabled={i === 0} onClick={() => intentar(() => moverCategoria(c.id, -1))}>
                     ↑ Subir
                   </button>
                   <button
                     type="button"
                     className={styles.botonTexto}
                     disabled={i === categorias.length - 1}
-                    onClick={() => moverCategoria(c.id, 1)}
+                    onClick={() => intentar(() => moverCategoria(c.id, 1))}
                   >
                     ↓ Bajar
                   </button>
@@ -268,7 +269,7 @@ export default function CartaAdminPage() {
                               <input
                                 type="checkbox"
                                 checked={p.disponible}
-                                onChange={(e) => setDisponibleProducto(p.id, e.target.checked)}
+                                onChange={(e) => intentar(() => setDisponibleProducto(p.id, e.target.checked))}
                               />
                               <span className={styles.switchPista} aria-hidden="true" />
                               <span>{p.disponible ? 'Sí' : 'Agotado'}</span>
@@ -347,8 +348,8 @@ export default function CartaAdminPage() {
           inicial={editando.valor}
           categorias={categorias}
           onClose={cerrar}
-          onGuardado={(t) => {
-            if (editando.valor.activo === false) setActivoProducto(editando.valor.id, true);
+          onGuardado={async (t) => {
+            if (editando.valor.activo === false) await intentar(() => setActivoProducto(editando.valor.id, true));
             guardado(t);
           }}
         />

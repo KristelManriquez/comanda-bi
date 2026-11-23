@@ -54,6 +54,7 @@ export async function http(ruta, { method = 'GET', body, personal = false } = {}
     }
     const error = new Error(datos?.error ?? 'Ocurrió un error inesperado');
     error.status = res.status;
+    if (datos?.campo) error.campo = datos.campo;
     throw error;
   }
   return datos;

@@ -1,17 +1,17 @@
 /**
- * Datos de El 10, El carro futbolero: foodtruck de hamburguesas que
+ * Datos iniciales de El 10, El carro futbolero: foodtruck de hamburguesas que
  * atiende en eventos e instala mesas para sus clientes.
- * La carta parte de su Instagram (@el10_carrofutbolero); los precios,
- * costos y productos adicionales son referenciales para la demostración.
  *
- * La forma de estos objetos replica lo que entregará la API REST
- * (y, por debajo, las tablas de PostgreSQL), para que al conectar
- * el backend solo haya que cambiar services/api.js.
+ * Es la configuración con la que parte el sistema: la carta (tomada de su
+ * Instagram, @el10_carrofutbolero; precios y costos referenciales hasta que
+ * El 10 los confirme), las mesas con sus tokens de QR y las cuentas del personal.
+ * `npm run db:init` (server) carga estos datos en PostgreSQL. No hay pedidos ni
+ * ventas: esos los genera la operación real de la aplicación.
  *
  *   restaurante  -> configuración general
  *   mesa         -> id, numero, token_qr, activa
- *   categoria    -> id, nombre, orden, activa
- *   producto     -> id, categoria_id, nombre, descripcion, precio,
+ *   categoria    -> id, nombre, orden, icono
+ *   producto     -> id, categoria_id, nombre, descripcion, precio, costo,
  *                   imagen_url, disponible, destacado
  */
 
@@ -240,9 +240,9 @@ export const productos = productosBase.map((p) => ({ ...p, costo: COSTOS[p.id] }
  * las mesas como garzón (el rol de administrador accede a la vista del garzón).
  */
 export const usuarios = [
-  { id: 1, nombre: 'Administración El 10', correo: 'admin@el10.cl', rol: 'administrador', activo: true },
+  { id: 1, nombre: 'Diego', correo: 'admin@el10.cl', rol: 'administrador', activo: true },
   { id: 2, nombre: 'Cocina El 10', correo: 'cocina@el10.cl', rol: 'cocina', activo: true },
 ];
 
-/** Contraseña de demostración para todos los usuarios simulados. */
+/** Contraseña inicial de las cuentas del personal (se puede cambiar en Administración › Usuarios). */
 export const PASSWORD_DEMO = 'el10-2026';

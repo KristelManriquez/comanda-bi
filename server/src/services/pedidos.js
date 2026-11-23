@@ -2,9 +2,11 @@ import { query, transaccion } from '../db/pool.js';
 import { avisarCambioPedidos } from '../sockets/index.js';
 
 /** Error con código HTTP, para que el manejador central responda con ese estado. */
-export function errorHttp(status, mensaje) {
+export function errorHttp(status, mensaje, campo) {
   const error = new Error(mensaje);
   error.status = status;
+  // Campo del formulario al que se refiere el error (el front lo muestra junto a ese campo)
+  if (campo) error.campo = campo;
   return error;
 }
 
@@ -14,7 +16,7 @@ export function errorHttp(status, mensaje) {
  *   recibido_en, garzon_id, total, detalle: [{ producto_id, nombre, cantidad, precio_unitario, nota }] }
  * recibido_en y garzon_id salen del historial de estados.
  */
-const SELECT_PEDIDO = `
+export const SELECT_PEDIDO = `
   SELECT p.id, p.cuenta_id, c.mesa_id, m.numero AS mesa_numero, m.token_qr AS token_mesa,
          p.estado, p.creado_en, h.fecha AS recibido_en, h.usuario_id AS garzon_id,
          SUM(d.cantidad * d.precio_unitario)::int AS total,
@@ -29,7 +31,7 @@ const SELECT_PEDIDO = `
   JOIN producto pr ON pr.id = d.producto_id
   LEFT JOIN historial_estado_pedido h ON h.pedido_id = p.id AND h.estado = 'recibido'
 `;
-const GROUP_PEDIDO = 'GROUP BY p.id, c.mesa_id, m.numero, m.token_qr, h.fecha, h.usuario_id';
+export const GROUP_PEDIDO = 'GROUP BY p.id, c.mesa_id, m.numero, m.token_qr, h.fecha, h.usuario_id';
 
 async function mesaActivaPorToken(db, token) {
   const { rows } = await db.query('SELECT id, numero, token_qr, activa FROM mesa WHERE token_qr = $1 AND activa', [token]);

@@ -8,13 +8,12 @@
  *   GET   /api/mesas-estado
  *   POST  /api/cuentas/:id/cerrar
  * y sin servidor trabaja sobre store.js (demo).
- * La administración del catálogo (RF09 y RF10) y el dashboard aún usan los datos simulados.
+ * La administración (carta, mesas, usuarios) está en catalogo.js y el dashboard en biApi.js.
  */
 
-import { mesas as mesasIniciales, productos as productosIniciales } from '../data/mockData';
-import { mesasActuales, productosActuales, usuariosActuales, usuariosConClave } from './catalogo';
+import { mesasActuales, usuariosConClave } from './catalogo';
 import { ESTADOS_PEDIDO } from '../utils/pedido';
-import { COLECCIONES, leer, escribir, siguienteId, reiniciar, reiniciarOperacion } from './store';
+import { COLECCIONES, leer, escribir, siguienteId, reiniciar } from './store';
 import { esperar } from './api';
 import { http, MODO_API } from './http';
 
@@ -158,111 +157,6 @@ export async function cerrarCuenta(cuentaId, usuario) {
   return cuenta;
 }
 
-/* ---------------- Administración (lecturas) ---------------- */
-
-export async function getProductosAdmin() {
-  return productosActuales();
-}
-
-export async function getUsuarios() {
-  return usuariosActuales();
-}
-
-/** Mesas con la indicación de si tienen una cuenta abierta (no se pueden desactivar). */
-export async function getMesas() {
-  const abiertas = new Set(leer(COLECCIONES.CUENTAS).filter((c) => c.estado === 'abierta').map((c) => c.mesa_id));
-  return mesasActuales().map((m) => ({ ...m, cuentaAbierta: abiertas.has(m.id) }));
-}
-
-/* ---------------- Datos de demostración ---------------- */
-
-/**
- * Crea algunas cuentas abiertas con pedidos solicitados y recibidos,
- * para mostrar la cocina y la vista del garzón con movimiento.
- */
-export function cargarPedidosDemo() {
-  // Mantiene la carta, las mesas y los usuarios que haya editado el administrador
-  reiniciarOperacion();
-  const hace = (min) => new Date(Date.now() - min * 60000).toISOString();
-  const catalogo = productosActuales();
-  const nombre = (id) => catalogo.find((p) => p.id === id) ?? productosIniciales.find((p) => p.id === id);
-  const mesas = mesasActuales();
-  const linea = (id, cantidad, nota = '') => ({
-    producto_id: id,
-    nombre: nombre(id).nombre,
-    cantidad,
-    precio_unitario: nombre(id).precio,
-    nota,
-  });
-
-  const plan = [
-    { mesa: 1, abierta: 48, pedidos: [
-      { min: 46, recibido: 31, detalle: [linea(101, 2), linea(501, 2, 'una Coca-Cola Zero')] },
-      { min: 14, detalle: [linea(201, 1, 'sin pepinillos'), linea(302, 1)] },
-    ] },
-    { mesa: 2, abierta: 9, pedidos: [
-      { min: 8, detalle: [linea(202, 2, 'una sin cebolla'), linea(503, 2)] },
-    ] },
-    { mesa: 3, abierta: 62, pedidos: [
-      { min: 60, recibido: 44, detalle: [linea(104, 1, 'carne bien cocida'), linea(301, 2)] },
-      { min: 39, recibido: 22, detalle: [linea(304, 2)] },
-    ] },
-    { mesa: 4, abierta: 4, pedidos: [
-      { min: 3, detalle: [linea(105, 2, 'una sin mayonesa'), linea(501, 2)] },
-    ] },
-    { mesa: 5, abierta: 27, pedidos: [
-      { min: 25, recibido: 12, detalle: [linea(203, 3), linea(502, 1)] },
-      { min: 1, detalle: [linea(401, 2), linea(402, 1, 'manjar aparte')] },
-    ] },
-  ];
-
-  const cuentas = [];
-  const pedidos = [];
-  const historial = [];
-  plan.forEach((m) => {
-    const mesa = mesas.find((x) => x.numero === m.mesa) ?? mesasIniciales.find((x) => x.numero === m.mesa);
-    const cuenta = {
-      id: 501 + cuentas.length,
-      mesa_id: mesa.id,
-      mesa_numero: mesa.numero,
-      garzon_id: null,
-      estado: 'abierta',
-      total: 0,
-      abierta_en: hace(m.abierta),
-      cerrada_en: null,
-    };
-    cuentas.push(cuenta);
-    m.pedidos.forEach((p) => {
-      const pedido = {
-        id: 1001 + pedidos.length,
-        cuenta_id: cuenta.id,
-        mesa_id: mesa.id,
-        mesa_numero: mesa.numero,
-        token_mesa: mesa.token_qr,
-        estado: p.recibido ? ESTADOS_PEDIDO.RECIBIDO : ESTADOS_PEDIDO.SOLICITADO,
-        creado_en: hace(p.min),
-        recibido_en: p.recibido ? hace(p.recibido) : null,
-        garzon_id: p.recibido ? 1 : null,
-        detalle: p.detalle,
-        total: p.detalle.reduce((s, d) => s + d.precio_unitario * d.cantidad, 0),
-      };
-      cuenta.total += pedido.total;
-      pedidos.push(pedido);
-      historial.push({ id: historial.length + 1, pedido_id: pedido.id, usuario_id: null, estado: 'solicitado', fecha: pedido.creado_en });
-      if (p.recibido) historial.push({ id: historial.length + 1, pedido_id: pedido.id, usuario_id: 1, estado: 'recibido', fecha: pedido.recibido_en });
-    });
-  });
-  // pedidos ordenados por hora de creación (ids correlativos)
-  pedidos.sort((a, b) => new Date(a.creado_en) - new Date(b.creado_en)).forEach((p, i) => {
-    const nuevo = 1001 + i;
-    historial.filter((h) => h.pedido_id === p.id).forEach((h) => (h.pedido_id = -nuevo));
-    p.id = nuevo;
-  });
-  historial.forEach((h) => (h.pedido_id = Math.abs(h.pedido_id)));
-
-  escribir(COLECCIONES.CUENTAS, cuentas);
-  escribir(COLECCIONES.HISTORIAL, historial);
-  escribir(COLECCIONES.PEDIDOS, pedidos);
-}
+/* ---------------- Demo sin servidor ---------------- */
 
 export { reiniciar as reiniciarDemo };

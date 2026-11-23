@@ -1,8 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { getMesas } from '../../services/staffApi';
-import { crearMesa, regenerarQr, setActivaMesa } from '../../services/catalogo';
+import { crearMesa, getMesasAdmin, regenerarQr, setActivaMesa } from '../../services/catalogo';
 import { useEnVivo } from '../../hooks/useEnVivo';
 import Dialogo from './ui/Dialogo';
 import Aviso from './ui/Aviso';
@@ -40,28 +39,34 @@ function descargarQr(mesa) {
 
 /** Mesas y sus códigos QR (RF10). Cada QR abre la carta con el token aleatorio de la mesa. */
 export default function MesasAdminPage() {
-  const [mesas] = useEnVivo(getMesas);
+  const [mesas, recargar] = useEnVivo(getMesasAdmin);
   const [aRegenerar, setARegenerar] = useState(null);
   const [aviso, avisar] = useAviso();
   const origen = window.location.origin;
   const cerrarDialogo = useCallback(() => setARegenerar(null), []);
 
-  const nueva = () => {
-    const numero = crearMesa();
-    avisar(`Mesa ${numero} creada con su código QR`);
-  };
-  const cambiarEstado = (m) => {
+  const intentar = async (accion) => {
     try {
-      setActivaMesa(m.id, !m.activa, m.cuentaAbierta);
-      avisar(m.activa ? `Mesa ${m.numero} desactivada: su QR deja de abrir la carta` : `Mesa ${m.numero} activada`);
+      const texto = await accion();
+      if (texto) avisar(texto);
     } catch (err) {
       avisar(err.message, true);
     }
+    recargar();
   };
+  const nueva = () => intentar(async () => `Mesa ${await crearMesa()} creada con su código QR`);
+  const cambiarEstado = (m) =>
+    intentar(async () => {
+      await setActivaMesa(m.id, !m.activa, m.cuentaAbierta);
+      return m.activa ? `Mesa ${m.numero} desactivada: su QR deja de abrir la carta` : `Mesa ${m.numero} activada`;
+    });
   const confirmarRegenerar = () => {
-    regenerarQr(aRegenerar.id);
-    avisar(`Nuevo QR para la mesa ${aRegenerar.numero}. Imprímelo y reemplaza el anterior.`);
+    const mesa = aRegenerar;
     setARegenerar(null);
+    intentar(async () => {
+      await regenerarQr(mesa.id);
+      return `Nuevo QR para la mesa ${mesa.numero}. Imprímelo y reemplaza el anterior.`;
+    });
   };
 
   return (

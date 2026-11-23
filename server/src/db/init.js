@@ -2,7 +2,7 @@
  * Crea las tablas y carga los datos iniciales de El 10.
  * Uso: npm run db:init   (OJO: borra los datos que hubiera)
  *
- * La carta, las mesas y los usuarios se toman de client/src/data/mockData.js,
+ * La carta, las mesas y los usuarios se toman de client/src/data/datosIniciales.js,
  * para que la demo y la base de datos tengan exactamente los mismos datos
  * (incluidos los tokens de los QR).
  */
@@ -10,7 +10,7 @@ import '../env.js';
 import { readFile } from 'node:fs/promises';
 import bcrypt from 'bcryptjs';
 import { pool } from './pool.js';
-import { categorias, mesas, productos, usuarios, PASSWORD_DEMO } from '../../../client/src/data/mockData.js';
+import { categorias, mesas, productos, usuarios, PASSWORD_DEMO } from '../../../client/src/data/datosIniciales.js';
 
 const schema = await readFile(new URL('./schema.sql', import.meta.url), 'utf8');
 

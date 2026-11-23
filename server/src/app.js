@@ -3,6 +3,7 @@ import cors from 'cors';
 import healthRoutes from './routes/health.routes.js';
 import comensalRoutes from './routes/comensal.routes.js';
 import personalRoutes from './routes/personal.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 
 /** Orígenes que pueden llamar a la API (el front local y el publicado en Vercel). */
 export const ORIGENES = (process.env.CLIENT_URL || 'http://localhost:5173').split(',').map((o) => o.trim());
@@ -14,6 +15,7 @@ app.use(express.json({ limit: '50kb' }));
 
 app.use('/api/health', healthRoutes);
 app.use('/api', personalRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api', comensalRoutes);
 
 // 404
@@ -25,7 +27,7 @@ app.use((req, res) => {
 app.use((err, req, res, _next) => {
   if (!err.status || err.status >= 500) console.error(err);
   const status = err.status || (err.type === 'entity.parse.failed' ? 400 : 500);
-  res.status(status).json({ error: status === 500 ? 'Error interno del servidor' : err.message });
+  res.status(status).json({ error: status === 500 ? 'Error interno del servidor' : err.message, campo: err.campo });
 });
 
 export default app;

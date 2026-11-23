@@ -46,6 +46,19 @@ y registro anónimo de la navegación.
 | PATCH | `/api/pedidos/:id` | Garzón | Marcar como recibido |
 | GET | `/api/mesas-estado` | Garzón | Mesas con su cuenta abierta |
 | POST | `/api/cuentas/:id/cerrar` | Garzón | Registrar el pago presencial |
+| GET, POST | `/api/admin/categorias` | Administrador | Listar y crear categorías |
+| PATCH, DELETE | `/api/admin/categorias/:id` | Administrador | Renombrar o eliminar (sin productos) |
+| POST | `/api/admin/categorias/:id/mover` | Administrador | Cambiar el orden en la carta |
+| GET, POST | `/api/admin/productos` | Administrador | Listar (con costo) y crear productos |
+| PUT | `/api/admin/productos/:id` | Administrador | Editar un producto |
+| PATCH | `/api/admin/productos/:id` | Administrador | `{ disponible }` (agotado) o `{ activo }` (retirar / reincorporar) |
+| GET, POST | `/api/admin/mesas` | Administrador | Listar y crear mesas |
+| PATCH | `/api/admin/mesas/:id` | Administrador | Activar o desactivar |
+| POST | `/api/admin/mesas/:id/regenerar-qr` | Administrador | Nuevo token de QR |
+| GET, POST | `/api/admin/usuarios` | Administrador | Listar y crear usuarios del personal |
+| PUT | `/api/admin/usuarios/:id` | Administrador | Editar (la contraseña solo si se envía) |
+| GET | `/api/admin/dashboard?desde&hasta` | Administrador | Cuentas cerradas, pedidos, eventos y catálogo del rango |
+| GET | `/api/admin/dashboard/rango` | Administrador | Primera fecha con datos |
 
 Las rutas del personal exigen `Authorization: Bearer <token>`; el administrador puede usarlas todas.
 
@@ -54,4 +67,5 @@ Las rutas del personal exigen `Authorization: Bearer <token>`; el administrador 
 Cuando se crea un pedido, se marca como recibido o se cierra una cuenta, el servidor
 emite `pedidos:cambio` a la sala `personal` (cocina y garzones, conectados con su JWT)
 y a la sala de la mesa (el comensal, conectado con el token del QR). Cada pantalla
-vuelve a pedir sus datos a la API.
+vuelve a pedir sus datos a la API. Los cambios de la administración (carta, mesas,
+usuarios) avisan a todas las pantallas.

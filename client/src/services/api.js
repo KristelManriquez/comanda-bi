@@ -4,12 +4,12 @@
  * Funciona de dos formas (ver http.js):
  *  - Con servidor (MODO_API): cada función llama a la API REST, que guarda
  *    los pedidos en PostgreSQL.
- *  - Demo: datos simulados (mockData) guardados en localStorage (store.js).
+ *  - Demo: datos simulados (datosIniciales) guardados en localStorage (store.js).
  *
  * Los componentes no cambian, porque solo conocen estas funciones.
  */
 
-import { restaurante } from '../data/mockData';
+import { restaurante } from '../data/datosIniciales';
 import { categoriasActuales, mesasActuales, productosActuales } from './catalogo';
 import { ESTADOS_PEDIDO } from '../utils/pedido';
 import { COLECCIONES, leer, escribir, siguienteId } from './store';

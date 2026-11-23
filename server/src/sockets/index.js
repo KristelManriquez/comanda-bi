@@ -33,3 +33,9 @@ export function avisarCambioPedidos(mesaId) {
   if (!io) return;
   io.to('personal').to(`mesa:${mesaId}`).emit('pedidos:cambio');
 }
+
+/** Avisa a todas las pantallas (personal y mesas) que cambió la carta, las mesas o los usuarios. */
+export function avisarCambioGeneral() {
+  if (!io) return;
+  io.emit('pedidos:cambio');
+}

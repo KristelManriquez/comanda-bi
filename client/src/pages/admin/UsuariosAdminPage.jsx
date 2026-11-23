@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { getUsuarios, NOMBRE_ROL, ROLES } from '../../services/staffApi';
-import { guardarUsuario } from '../../services/catalogo';
+import { NOMBRE_ROL, ROLES } from '../../services/staffApi';
+import { getUsuariosAdmin, guardarUsuario } from '../../services/catalogo';
 import { useEnVivo } from '../../hooks/useEnVivo';
 import Dialogo, { Campo, Casilla } from './ui/Dialogo';
 import Aviso from './ui/Aviso';
@@ -27,10 +27,10 @@ function UsuarioForm({ inicial, idActual, onClose, onGuardado }) {
   };
   const err = (campo) => (error?.campo === campo ? error.message : null);
 
-  const guardar = (e) => {
+  const guardar = async (e) => {
     e.preventDefault();
     try {
-      guardarUsuario(datos, idActual);
+      await guardarUsuario(datos, idActual);
       onGuardado(nuevo ? `Usuario ${datos.nombre.trim()} creado` : 'Usuario actualizado');
     } catch (er) {
       setError(er);
@@ -94,7 +94,7 @@ function UsuarioForm({ inicial, idActual, onClose, onGuardado }) {
 /** Usuarios del personal y sus roles (RF10). */
 export default function UsuariosAdminPage() {
   const { usuario: actual } = useOutletContext();
-  const [usuarios] = useEnVivo(getUsuarios);
+  const [usuarios, recargar] = useEnVivo(getUsuariosAdmin);
   const [editando, setEditando] = useState(null);
   const [aviso, avisar] = useAviso();
   const cerrar = useCallback(() => setEditando(null), []);
@@ -166,6 +166,7 @@ export default function UsuariosAdminPage() {
           onGuardado={(t) => {
             setEditando(null);
             avisar(t);
+            recargar();
           }}
         />
       )}

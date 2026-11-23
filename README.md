@@ -12,7 +12,7 @@ comanda-bi/
 │   └── src/
 │       ├── components/      Piezas reutilizables de interfaz
 │       ├── context/         Estado global (carrito)
-│       ├── data/            Datos simulados mientras no existe el backend
+│       ├── data/            Datos iniciales de El 10 (carta, mesas, usuarios)
 │       ├── hooks/           useEnVivo: recarga datos al cambiar
 │       ├── layouts/         MesaLayout (QR de la mesa) y AdminLayout
 │       ├── pages/           Comensal, staff/ (login, garzón, cocina) y admin/ (dashboard)
@@ -54,7 +54,9 @@ npm run dev
 
 ## Estado actual
 
-Sin la variable `VITE_API_URL`, el frontend funciona como demo con datos simulados guardados en `localStorage` (las pestañas del mismo navegador comparten los pedidos). Con `VITE_API_URL`, el flujo del pedido (carta, pedidos, cocina, garzón y cierre de cuenta) usa el servidor, la base de datos y Socket.IO. La administración y el dashboard todavía usan los datos simulados.
+Con `VITE_API_URL` (en `client/.env.local`), **todo** usa el servidor, la base de datos PostgreSQL y Socket.IO: carta, pedidos, cocina, garzón, cierre de cuenta, administración (carta, mesas, usuarios) y dashboard. No hay pedidos ni ventas inventadas: `npm run db:init` carga solo la carta, las mesas y las cuentas del personal, y los indicadores se calculan con lo que ocurre en la aplicación.
+
+Sin `VITE_API_URL`, el frontend funciona como demo en el navegador (`localStorage`), con los mismos datos iniciales y sin historial.
 
 **Comensal** (`/mesa/:token`, teléfono, sin registro)
 
@@ -70,21 +72,29 @@ Sin la variable `VITE_API_URL`, el frontend funciona como demo con datos simulad
 | Cocina | `/cocina` | Pantalla de solo lectura, compartida por las dos personas de la cocina del carro, con los pedidos solicitados y su tiempo de espera. |
 | Administración | `/admin` | Dashboard BI; carta (crear, editar, retirar productos y categorías, con precio, costo y disponibilidad); mesas (crear, activar o desactivar, regenerar y descargar el QR); usuarios (crear y editar con su rol). |
 
-Usuarios de demostración (contraseña `el10-2026`): `admin@el10.cl` (administración y garzón) y `cocina@el10.cl` (cocina). El acceso rápido «Garzón» entra con el administrador a la vista del garzón. La página de inicio tiene accesos rápidos y botones para **cargar pedidos de ejemplo** (mantiene la carta, mesas y usuarios editados) o **reiniciar la demo** (vuelve todo a los datos iniciales).
+Cuentas iniciales (contraseña `el10-2026`, se puede cambiar en Administración › Usuarios): `admin@el10.cl` (Diego, administrador y garzón) y `cocina@el10.cl` (cocina). El acceso rápido «Garzón» entra con el administrador a la vista del garzón. Con el servidor, la página de inicio muestra los enlaces de las mesas solo si hay una sesión de administrador en esa pestaña; también están en Administración › Mesas y QR («Abrir carta de la mesa»).
 
 **Dashboard de inteligencia de negocio** (`/admin`)
 
 - Ventas: ventas, cuentas, pedidos, ticket promedio y tiempo de entrega (con variación frente al periodo anterior), ventas por día, por franja horaria y por categoría, y productos más y menos vendidos.
 - Embudo de la carta: global y por producto, con alertas de productos con mucho interés y poca conversión.
 - Ingeniería de menú (Kasavana y Smith) ampliada con la conversión del embudo.
-- Usa 12 semanas de eventos simulados de El 10 (viernes, sábado y domingo; `client/src/data/historialSimulado.js`) más lo registrado hoy en la app. Incluye a propósito dos productos con mucho interés y poca conversión (Veggie y Papas cheddar y tocino) para probar el embudo.
+- Solo datos reales: las ventas cuentan cuando el garzón registra el pago y cierra la cuenta; el embudo usa los eventos anónimos de navegación. El servidor entrega los datos con `GET /api/admin/dashboard?desde&hasta` y el front calcula los indicadores.
+
+**Cómo probar el flujo completo**
+
+1. `cd server && npm run db:init && npm run dev` y `cd client && npm run dev` (con `VITE_API_URL` en `client/.env.local`).
+2. Pestaña 1: entra como `admin@el10.cl` → Mesas y QR → «Abrir carta de la mesa» (o escanea el QR con el teléfono).
+3. En la carta, abre productos, agrega y solicita el pedido.
+4. Pestaña 2 (u otro dispositivo): entra como `cocina@el10.cl` y ve el pedido.
+5. Pestaña 1: «Atender mesas (garzón)» → «Entregado: marcar como recibido». El comensal ve «Recibido».
+6. Mesas → la mesa → «Registrar pago y cerrar cuenta».
+7. Dashboard: ventas, embudo e ingeniería de menú con ese pedido.
 
 **Próximos pasos**
 
-1. Conectar la administración (carta, mesas, usuarios) a la base de datos.
-2. Calcular el dashboard con consultas SQL sobre la base de datos.
-3. Publicar el servidor y conectar el sitio de Vercel.
-4. Subir fotos de los productos de El 10.
+1. Publicar el servidor y conectar el sitio de Vercel.
+2. Confirmar precios y costos con El 10 y subir fotos de los productos.
 
 ## Mesas de prueba
 
