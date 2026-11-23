@@ -1,5 +1,6 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { logout } from '../services/staffApi';
+import { useState } from 'react';
+import { NavLink, Outlet } from 'react-router-dom';
+import ConfirmarSalida from '../components/ConfirmarSalida';
 import { IconChart, IconChef, IconLogout, IconMenuBook, IconQr, IconTray, IconUsers } from '../components/Icons';
 import styles from './AdminLayout.module.css';
 
@@ -17,11 +18,7 @@ const OPERACION = [
 
 /** Estructura del módulo de administración (solo rol administrador). */
 export default function AdminLayout({ usuario }) {
-  const navigate = useNavigate();
-  const salir = () => {
-    logout();
-    navigate('/personal');
-  };
+  const [confirmando, setConfirmando] = useState(false);
 
   return (
     <div className={styles.shell}>
@@ -52,12 +49,14 @@ export default function AdminLayout({ usuario }) {
             <strong>{usuario.nombre}</strong>
             <small>Administración y garzón</small>
           </span>
-          <button type="button" onClick={salir} className={styles.salir}>
-            <IconLogout />
-            <span className="visually-hidden">Cerrar sesión</span>
-          </button>
         </div>
+        {/* Última acción de la barra; pide confirmación para no salir por error */}
+        <button type="button" onClick={() => setConfirmando(true)} className={styles.salir}>
+          <IconLogout />
+          <span>Cerrar sesión</span>
+        </button>
       </aside>
+      {confirmando && <ConfirmarSalida usuario={usuario} onClose={() => setConfirmando(false)} />}
       <div className={styles.contenido}>
         <Outlet context={{ usuario }} />
       </div>

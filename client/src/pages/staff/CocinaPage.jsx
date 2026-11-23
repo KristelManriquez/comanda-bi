@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getPedidosSolicitados, logout } from '../../services/staffApi';
+import { Link } from 'react-router-dom';
+import { getPedidosSolicitados, ROLES } from '../../services/staffApi';
 import { useEnVivo } from '../../hooks/useEnVivo';
 import { formatHora, minutosDesde } from '../../utils/format';
-import { IconChef, IconLogout } from '../../components/Icons';
+import { IconBack, IconChef } from '../../components/Icons';
+import ConfirmarSalida from '../../components/ConfirmarSalida';
 import styles from './CocinaPage.module.css';
 
 /** Nivel de espera de un pedido: guía visual para priorizar (con texto, no solo color). */
@@ -28,13 +29,8 @@ function Reloj() {
  * el pedido desaparece cuando el garzón lo marca como recibido.
  */
 export default function CocinaPage({ usuario }) {
-  const navigate = useNavigate();
   const [pedidos] = useEnVivo(getPedidosSolicitados, 20000);
-
-  const salir = () => {
-    logout();
-    navigate('/personal');
-  };
+  const [confirmandoSalida, setConfirmandoSalida] = useState(false);
 
   return (
     <div className={styles.page}>
@@ -53,10 +49,13 @@ export default function CocinaPage({ usuario }) {
             <strong>{pedidos?.length ?? '–'}</strong> por preparar
           </span>
           <Reloj />
-          <button type="button" className={styles.salir} onClick={salir} title={`Cerrar sesión de ${usuario.nombre}`}>
-            <IconLogout />
-            <span className="visually-hidden">Cerrar sesión</span>
-          </button>
+          {/* Diego (administrador) puede mirar la cocina y volver a su panel sin cerrar sesión */}
+          {usuario.rol === ROLES.ADMIN && (
+            <Link to="/admin" className={styles.volver}>
+              <IconBack width={18} height={18} />
+              Administración
+            </Link>
+          )}
         </div>
       </header>
 
@@ -101,7 +100,14 @@ export default function CocinaPage({ usuario }) {
 
       <footer className={styles.pie}>
         El pedido sale de esta pantalla cuando el garzón lo entrega y lo marca como recibido.
+        {/* La cuenta de cocina no tiene panel: cierra sesión desde aquí, sin destacarlo */}
+        {usuario.rol !== ROLES.ADMIN && (
+          <button type="button" className={styles.salirDiscreto} onClick={() => setConfirmandoSalida(true)}>
+            Cerrar sesión de {usuario.nombre}
+          </button>
+        )}
       </footer>
+      {confirmandoSalida && <ConfirmarSalida usuario={usuario} onClose={() => setConfirmandoSalida(false)} />}
     </div>
   );
 }

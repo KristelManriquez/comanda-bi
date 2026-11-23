@@ -58,17 +58,21 @@
   font-size: 2rem;
   font-variant-numeric: tabular-nums;
 }
-.salir {
-  display: grid;
-  place-items: center;
-  width: 42px;
+
+.volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   height: 42px;
+  padding: 0 14px 0 10px;
   border-radius: 12px;
   border: 1px solid #3b2b4d;
-  background: transparent;
   color: #b9aac9;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-decoration: none;
 }
-.salir:hover {
+.volver:hover {
   color: #fff;
   border-color: #6b5584;
 }
@@ -198,4 +202,18 @@
   color: #8f7fa3;
   font-size: var(--fs-sm);
   text-align: center;
+}
+
+.salirDiscreto {
+  display: block;
+  margin: 10px auto 0;
+  border: 0;
+  background: none;
+  color: #8f7fa3;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.salirDiscreto:hover {
+  color: #fff;
 }

@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   cerrarCuenta,
   getMesasConCuenta,
   getPedidosSolicitados,
-  logout,
   marcarRecibido,
+  ROLES,
 } from '../../services/staffApi';
 import { useEnVivo } from '../../hooks/useEnVivo';
 import { formatCLP, formatHora, haceCuanto, minutosDesde } from '../../utils/format';
 import { ESTADOS_PEDIDO, textoEstado } from '../../utils/pedido';
-import { IconCheck, IconClose, IconLogout } from '../../components/Icons';
+import { IconBack, IconCheck, IconClose } from '../../components/Icons';
+import ConfirmarSalida from '../../components/ConfirmarSalida';
 import Toast from '../../components/Toast';
 import styles from './GarzonPage.module.css';
 
@@ -22,7 +23,6 @@ const cargarTodo = () => Promise.all([getPedidosSolicitados(), getMesasConCuenta
  *  - "Mesas": estado de cada mesa; registra el pago presencial y cierra la cuenta.
  */
 export default function GarzonPage({ usuario }) {
-  const navigate = useNavigate();
   const [datos] = useEnVivo(cargarTodo, 20000);
   const [vista, setVista] = useState('entregar');
   const [mesaAbierta, setMesaAbierta] = useState(null);
@@ -42,10 +42,8 @@ export default function GarzonPage({ usuario }) {
     avisar(`Pedido #${pedido.id} de la mesa ${pedido.mesa_numero} marcado como recibido`);
   };
 
-  const salir = () => {
-    logout();
-    navigate('/personal');
-  };
+  const esAdmin = usuario.rol === ROLES.ADMIN;
+  const [confirmandoSalida, setConfirmandoSalida] = useState(false);
 
   return (
     <div className={styles.page}>
@@ -54,10 +52,15 @@ export default function GarzonPage({ usuario }) {
           <p className={styles.rol}>Garzón · <span className={styles.marca}>El 10</span></p>
           <h1>Hola, {usuario.nombre.split(' ')[0]}</h1>
         </div>
-        <button type="button" className={styles.salir} onClick={salir}>
-          <IconLogout />
-          <span className="visually-hidden">Cerrar sesión</span>
-        </button>
+        <div className={styles.acciones}>
+          {/* El administrador también atiende como garzón: vuelve a su panel sin cerrar sesión */}
+          {esAdmin && (
+            <Link to="/admin" className={styles.volver}>
+              <IconBack width={18} height={18} />
+              Administración
+            </Link>
+          )}
+        </div>
       </header>
 
       <nav className={styles.tabs} aria-label="Vistas del garzón">
@@ -151,6 +154,16 @@ export default function GarzonPage({ usuario }) {
           </ul>
         )}
       </main>
+
+      {/* Quien no es administrador no tiene panel: cierra sesión desde aquí, sin destacarlo */}
+      {!esAdmin && (
+        <footer className={styles.pieSesion}>
+          <button type="button" onClick={() => setConfirmandoSalida(true)}>
+            Cerrar sesión de {usuario.nombre}
+          </button>
+        </footer>
+      )}
+      {confirmandoSalida && <ConfirmarSalida usuario={usuario} onClose={() => setConfirmandoSalida(false)} />}
 
       {mesaSeleccionada && (
         <CuentaSheet
