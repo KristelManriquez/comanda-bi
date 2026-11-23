@@ -24,15 +24,40 @@
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.8);
 }
-.salir {
-  display: grid;
-  place-items: center;
-  width: 42px;
+.pieSesion {
+  padding: 24px var(--gutter) 32px;
+  text-align: center;
+}
+.pieSesion button {
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: var(--fs-sm);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   height: 42px;
+  padding: 0 14px 0 10px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.16);
   color: #fff;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-decoration: none;
+}
+.volver:hover {
+  background: rgba(255, 255, 255, 0.26);
 }
 
 .tabs {
