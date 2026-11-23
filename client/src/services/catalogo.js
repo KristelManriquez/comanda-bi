@@ -1,17 +1,33 @@
 /**
  * Catálogo del restaurante: categorías, productos, mesas y usuarios.
  *
- * Parte con los datos iniciales de Fork (mockData) y guarda en store.js
+ * Parte con los datos iniciales de El 10 (datosIniciales) y guarda en store.js
  * los cambios que hace el administrador, para que se vean al instante en
  * la carta de las mesas, en la vista del garzón y en el dashboard.
  *
- * En el sistema real cada colección es una tabla de PostgreSQL y estas
- * funciones son endpoints REST protegidos con JWT y rol administrador:
- *   GET/POST/PATCH /api/categorias, /api/productos, /api/mesas, /api/usuarios
+ * Con servidor (MODO_API), las funciones de administración llaman a la API
+ * protegida con JWT y rol administrador (tablas de PostgreSQL):
+ *   /api/admin/categorias, /api/admin/productos, /api/admin/mesas, /api/admin/usuarios
+ * Sin servidor (demo), trabajan sobre store.js.
+ * Las funciones de escritura son asíncronas en ambos modos.
  */
 
-import * as inicial from '../data/mockData';
+import * as inicial from '../data/datosIniciales';
 import { COLECCIONES, leer, escribir, siguienteId } from './store';
+import { http, MODO_API } from './http';
+
+const admin = (ruta, opciones = {}) => http(`/admin${ruta}`, { ...opciones, personal: true });
+
+/* ---------------- Lectura para las páginas de administración ---------------- */
+
+/** Categorías y productos (con costo, incluidos los retirados) para la gestión de la carta. */
+export async function getCatalogoAdmin() {
+  if (MODO_API) {
+    const [categorias, productos] = await Promise.all([admin('/categorias'), admin('/productos')]);
+    return { categorias, productos };
+  }
+  return { categorias: categoriasActuales(), productos: productosActuales() };
+}
 
 // Copia profunda: los cambios nunca modifican los datos iniciales en memoria
 function coleccion(nombre, semilla) {
@@ -59,7 +75,12 @@ function error(mensaje, campo) {
 
 /* ---------------- Categorías ---------------- */
 
-export function guardarCategoria({ id, nombre }) {
+export async function guardarCategoria({ id, nombre }) {
+  if (MODO_API) {
+    return id
+      ? admin(`/categorias/${id}`, { method: 'PATCH', body: { nombre } })
+      : admin('/categorias', { method: 'POST', body: { nombre } });
+  }
   const lista = categoriasActuales();
   const limpio = texto(nombre);
   if (!limpio) throw error('Escribe el nombre de la categoría', 'nombre');
@@ -75,7 +96,8 @@ export function guardarCategoria({ id, nombre }) {
 }
 
 /** Mueve una categoría una posición arriba (-1) o abajo (+1) en la carta. */
-export function moverCategoria(id, direccion) {
+export async function moverCategoria(id, direccion) {
+  if (MODO_API) return admin(`/categorias/${id}/mover`, { method: 'POST', body: { direccion } });
   const lista = categoriasActuales();
   const i = lista.findIndex((c) => c.id === id);
   const j = i + direccion;
@@ -85,7 +107,8 @@ export function moverCategoria(id, direccion) {
   escribir(COLECCIONES.CATEGORIAS, lista);
 }
 
-export function eliminarCategoria(id) {
+export async function eliminarCategoria(id) {
+  if (MODO_API) return admin(`/categorias/${id}`, { method: 'DELETE' });
   if (productosActuales().some((p) => p.categoria_id === id && p.activo !== false)) {
     throw error('La categoría tiene productos. Muévelos o retíralos antes de eliminarla.');
   }
@@ -94,7 +117,13 @@ export function eliminarCategoria(id) {
 
 /* ---------------- Productos ---------------- */
 
-export function guardarProducto(datos) {
+export async function guardarProducto(datos) {
+  if (MODO_API) {
+    const cuerpo = { ...datos, precio: Number(datos.precio), costo: Number(datos.costo) };
+    return datos.id
+      ? admin(`/productos/${datos.id}`, { method: 'PUT', body: cuerpo })
+      : admin('/productos', { method: 'POST', body: cuerpo });
+  }
   const lista = productosActuales();
   const nombre = texto(datos.nombre);
   const precio = Number(datos.precio);
@@ -127,7 +156,8 @@ export function guardarProducto(datos) {
   escribir(COLECCIONES.PRODUCTOS, lista);
 }
 
-export function setDisponibleProducto(id, disponible) {
+export async function setDisponibleProducto(id, disponible) {
+  if (MODO_API) return admin(`/productos/${id}`, { method: 'PATCH', body: { disponible } });
   const lista = productosActuales();
   lista.find((p) => p.id === id).disponible = disponible;
   escribir(COLECCIONES.PRODUCTOS, lista);
@@ -137,7 +167,8 @@ export function setDisponibleProducto(id, disponible) {
  * Retira (o reincorpora) un producto de la carta. No se borra: sus ventas
  * pasadas siguen en detalle_pedido y en el dashboard.
  */
-export function setActivoProducto(id, activo) {
+export async function setActivoProducto(id, activo) {
+  if (MODO_API) return admin(`/productos/${id}`, { method: 'PATCH', body: { activo } });
   const lista = productosActuales();
   lista.find((p) => p.id === id).activo = activo;
   escribir(COLECCIONES.PRODUCTOS, lista);
@@ -151,7 +182,8 @@ function tokenQr(numero) {
   return `m${numero}-${Array.from(azar, (b) => b.toString(16).padStart(2, '0')).join('').slice(0, 6)}`;
 }
 
-export function crearMesa() {
+export async function crearMesa() {
+  if (MODO_API) return (await admin('/mesas', { method: 'POST' })).numero;
   const lista = mesasActuales();
   const numero = lista.reduce((m, x) => Math.max(m, x.numero), 0) + 1;
   lista.push({ id: siguienteId(lista), numero, token_qr: tokenQr(numero), activa: true });
@@ -159,7 +191,8 @@ export function crearMesa() {
   return numero;
 }
 
-export function setActivaMesa(id, activa, tieneCuentaAbierta) {
+export async function setActivaMesa(id, activa, tieneCuentaAbierta) {
+  if (MODO_API) return admin(`/mesas/${id}`, { method: 'PATCH', body: { activa } });
   if (!activa && tieneCuentaAbierta) throw error('La mesa tiene una cuenta abierta. Ciérrala antes de desactivarla.');
   const lista = mesasActuales();
   lista.find((m) => m.id === id).activa = activa;
@@ -167,7 +200,8 @@ export function setActivaMesa(id, activa, tieneCuentaAbierta) {
 }
 
 /** Genera un QR nuevo: el código impreso anterior deja de funcionar. */
-export function regenerarQr(id) {
+export async function regenerarQr(id) {
+  if (MODO_API) return admin(`/mesas/${id}/regenerar-qr`, { method: 'POST' });
   const lista = mesasActuales();
   const mesa = lista.find((m) => m.id === id);
   mesa.token_qr = tokenQr(mesa.numero);
@@ -178,7 +212,12 @@ export function regenerarQr(id) {
 
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function guardarUsuario(datos, idActual) {
+export async function guardarUsuario(datos, idActual) {
+  if (MODO_API) {
+    // eslint-disable-next-line no-unused-vars
+    const { id, ...cuerpo } = datos;
+    return id ? admin(`/usuarios/${id}`, { method: 'PUT', body: cuerpo }) : admin('/usuarios', { method: 'POST', body: cuerpo });
+  }
   const lista = usuariosConClave();
   const nombre = texto(datos.nombre);
   const correo = texto(datos.correo).toLowerCase();
@@ -202,4 +241,18 @@ export function guardarUsuario(datos, idActual) {
     lista.push({ id: siguienteId(lista), ...campos, clave });
   }
   escribir(COLECCIONES.USUARIOS, lista);
+}
+
+/* ---------------- Mesas y usuarios para la administración ---------------- */
+
+/** Mesas con la indicación de si tienen una cuenta abierta (no se pueden desactivar). */
+export async function getMesasAdmin() {
+  if (MODO_API) return admin('/mesas');
+  const abiertas = new Set(leer(COLECCIONES.CUENTAS).filter((c) => c.estado === 'abierta').map((c) => c.mesa_id));
+  return mesasActuales().map((m) => ({ ...m, cuentaAbierta: abiertas.has(m.id) }));
+}
+
+export async function getUsuariosAdmin() {
+  if (MODO_API) return admin('/usuarios');
+  return usuariosActuales();
 }

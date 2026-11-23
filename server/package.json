@@ -1,17 +1,27 @@
 {
-  "name": "fork-qr-server",
-  "version": "0.1.0",
+  "name": "comanda-bi-server",
+  "version": "0.2.0",
   "private": true,
-  "description": "API REST de Fork QR (Node.js + Express + PostgreSQL)",
+  "description": "API REST y tiempo real de Comanda BI (Node.js + Express + PostgreSQL + Socket.IO)",
   "type": "module",
   "main": "src/index.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "node --watch src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "db:init": "node src/db/init.js --directa"
   },
   "dependencies": {
+    "@neon/config": "^1.14.2",
+    "@neon/env": "^2.1.5",
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.21.2"
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3",
+    "socket.io": "^4.8.1"
   }
 }

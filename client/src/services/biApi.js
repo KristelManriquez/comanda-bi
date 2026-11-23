@@ -1,30 +1,23 @@
 /**
- * Indicadores del dashboard de inteligencia de negocio.
+ * Indicadores del dashboard de inteligencia de negocio de El 10.
  *
- * Combina el historial simulado (12 semanas) con la operación del día
- * guardada en store.js, y calcula:
+ * Solo usa datos reales registrados por la aplicación:
+ *  - Con servidor (MODO_API): GET /api/admin/dashboard?desde&hasta entrega las cuentas
+ *    cerradas (ventas pagadas), sus pedidos, los eventos anónimos de navegación y el
+ *    catálogo, todo desde PostgreSQL.
+ *  - Demo sin servidor: los mismos datos guardados en el navegador (store.js).
+ *
+ * Con esos datos se calculan:
  *   - indicadores de ventas (RF11)
  *   - embudo de conversión de la carta (RF12)
  *   - matriz de ingeniería de menú ampliada con la conversión (RF12)
- *
- * En el sistema real, cada cálculo será una consulta SQL en el backend
- * (GET /api/dashboard/ventas?desde=&hasta=, /embudo, /ingenieria-menu);
- * la prueba de validación de datos compara estos valores con consultas de control.
+ * La prueba de validación de datos compara estos valores con consultas SQL de control.
  */
 
-import { productos as productosIniciales, categorias as categoriasIniciales } from '../data/mockData';
 import { categoriasActuales, productosActuales } from './catalogo';
-
-/** Une el catálogo actual con los productos y categorías del historial (aunque se hayan retirado). */
-function union(actuales, iniciales) {
-  const ids = new Set(actuales.map((x) => x.id));
-  return [...actuales, ...iniciales.filter((x) => !ids.has(x.id))];
-}
-const catalogoProductos = () => union(productosActuales(), productosIniciales);
-const catalogoCategorias = () => union(categoriasActuales(), categoriasIniciales);
-import { getHistorialSimulado, claveDia } from '../data/historialSimulado';
 import { COLECCIONES, leer } from './store';
 import { TIPOS_EVENTO } from './api';
+import { http, MODO_API } from './http';
 
 const DIA_MS = 86400000;
 
@@ -34,54 +27,46 @@ export function inicioDelDia(fecha) {
   return d;
 }
 
-/** Datos de origen: historial simulado + operación registrada hoy en la app. */
-function fuentes() {
-  const h = getHistorialSimulado();
-  const cuentasVivas = leer(COLECCIONES.CUENTAS).filter((c) => c.estado === 'cerrada');
-  const idsVivas = new Set(cuentasVivas.map((c) => c.id));
-  const pedidosVivos = leer(COLECCIONES.PEDIDOS).filter((p) => idsVivas.has(p.cuenta_id));
-  return {
-    cuentas: [...h.cuentas, ...cuentasVivas],
-    pedidos: [...h.pedidos, ...pedidosVivos],
-    embudoDiario: { ...h.embudoDiario, ...embudoDeEventosVivos() },
-  };
-}
+/** Clave AAAA-MM-DD del día local de una fecha. */
+export const claveDia = (fecha) => {
+  const d = new Date(fecha);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
-/** Agrupa los eventos anónimos registrados en la app con la misma lógica del historial. */
-function embudoDeEventosVivos() {
-  const porDia = {};
-  const sesiones = {};
-  for (const e of leer(COLECCIONES.EVENTOS)) {
-    const clave = `${claveDia(e.fecha)}|${e.sesion_id}`;
-    const s = (sesiones[clave] ||= { dia: claveDia(e.fecha), vio: false, det: new Set(), add: new Set(), env: new Set() });
-    if (e.tipo === TIPOS_EVENTO.VER_CARTA) s.vio = true;
-    if (e.tipo === TIPOS_EVENTO.VER_DETALLE) s.det.add(e.producto_id);
-    if (e.tipo === TIPOS_EVENTO.AGREGAR) s.add.add(e.producto_id);
-    if (e.tipo === TIPOS_EVENTO.ENVIAR) s.env.add(e.producto_id);
-  }
-  for (const s of Object.values(sesiones)) {
-    if (!s.vio) continue;
-    const r = (porDia[s.dia] ||= { sesiones: 0, detalle: 0, agregar: 0, enviar: 0, productos: {} });
-    r.sesiones += 1;
-    const conAgregar = [...s.det].filter((id) => s.add.has(id));
-    const conEnvio = conAgregar.filter((id) => s.env.has(id));
-    if (s.det.size) r.detalle += 1;
-    if (conAgregar.length) r.agregar += 1;
-    if (conEnvio.length) r.enviar += 1;
-    s.det.forEach((id) => {
-      const fila = (r.productos[id] ||= [0, 0, 0]);
-      fila[0] += 1;
-      if (s.add.has(id)) fila[1] += 1;
-      if (s.add.has(id) && s.env.has(id)) fila[2] += 1;
-    });
-  }
-  return porDia;
-}
+/** Suma días respetando el calendario local (los cambios de horario no descuadran los días). */
+const sumarDias = (fecha, dias) => {
+  const d = new Date(fecha);
+  d.setDate(d.getDate() + dias);
+  return d;
+};
 
 const enRango = (iso, desde, hasta) => {
   const t = new Date(iso).getTime();
-  return t >= desde.getTime() && t < hasta.getTime() + DIA_MS;
+  return t >= desde.getTime() && t < sumarDias(hasta, 1).getTime();
 };
+
+/**
+ * Datos de origen entre `desde` y `hasta` (días completos) más el periodo anterior
+ * de igual duración, para comparar.
+ */
+async function cargarFuentes(desde, hasta) {
+  const dias = Math.round((hasta - desde) / DIA_MS) + 1;
+  const inicio = sumarDias(desde, -dias);
+  const fin = sumarDias(hasta, 1);
+  if (MODO_API) {
+    const q = new URLSearchParams({ desde: inicio.toISOString(), hasta: fin.toISOString() });
+    return http(`/admin/dashboard?${q}`, { personal: true });
+  }
+  const cuentas = leer(COLECCIONES.CUENTAS).filter((c) => c.estado === 'cerrada');
+  const ids = new Set(cuentas.map((c) => c.id));
+  return {
+    cuentas,
+    pedidos: leer(COLECCIONES.PEDIDOS).filter((p) => ids.has(p.cuenta_id)),
+    eventos: leer(COLECCIONES.EVENTOS),
+    productos: productosActuales(),
+    categorias: categoriasActuales(),
+  };
+}
 
 const minutos = (a, b) => (new Date(b) - new Date(a)) / 60000;
 
@@ -99,24 +84,22 @@ function kpis(cuentas, pedidos) {
   };
 }
 
-/** GET /api/dashboard/ventas?desde&hasta */
-export function getIndicadoresVentas(desde, hasta) {
-  const { cuentas, pedidos } = fuentes();
+function calcularVentas(f, desde, hasta) {
   const dias = Math.round((hasta - desde) / DIA_MS) + 1;
-  const prevHasta = new Date(desde.getTime() - DIA_MS);
-  const prevDesde = new Date(desde.getTime() - dias * DIA_MS);
+  const prevHasta = sumarDias(desde, -1);
+  const prevDesde = sumarDias(desde, -dias);
 
-  const cuentasR = cuentas.filter((c) => enRango(c.cerrada_en, desde, hasta));
+  const cuentasR = f.cuentas.filter((c) => enRango(c.cerrada_en, desde, hasta));
   const ids = new Set(cuentasR.map((c) => c.id));
-  const pedidosR = pedidos.filter((p) => ids.has(p.cuenta_id));
-  const cuentasP = cuentas.filter((c) => enRango(c.cerrada_en, prevDesde, prevHasta));
+  const pedidosR = f.pedidos.filter((p) => ids.has(p.cuenta_id));
+  const cuentasP = f.cuentas.filter((c) => enRango(c.cerrada_en, prevDesde, prevHasta));
   const idsP = new Set(cuentasP.map((c) => c.id));
-  const pedidosP = pedidos.filter((p) => idsP.has(p.cuenta_id));
+  const pedidosP = f.pedidos.filter((p) => idsP.has(p.cuenta_id));
 
   // Ventas por día
   const porDia = [];
   for (let i = 0; i < dias; i++) {
-    const d = new Date(desde.getTime() + i * DIA_MS);
+    const d = sumarDias(desde, i);
     porDia.push({ clave: claveDia(d), fecha: d, ventas: 0, cuentas: 0 });
   }
   const idx = Object.fromEntries(porDia.map((d, i) => [d.clave, i]));
@@ -128,11 +111,11 @@ export function getIndicadoresVentas(desde, hasta) {
     }
   });
 
-  // Ventas por franja horaria (hora de envío del pedido)
+  // Ventas por franja horaria (hora de envío del pedido); se agregan las horas fuera de 12-23 si hay ventas
   const franjas = {};
   for (let h = 12; h <= 23; h++) franjas[h] = 0;
   // Ventas y unidades por producto y por categoría
-  const porProducto = Object.fromEntries(catalogoProductos().map((p) => [p.id, { ...p, unidades: 0, ventas: 0 }]));
+  const porProducto = Object.fromEntries(f.productos.map((p) => [p.id, { ...p, unidades: 0, ventas: 0 }]));
   pedidosR.forEach((p) => {
     const h = new Date(p.creado_en).getHours();
     franjas[h] = (franjas[h] || 0) + p.total;
@@ -144,12 +127,12 @@ export function getIndicadoresVentas(desde, hasta) {
     });
   });
   const listaProductos = Object.values(porProducto);
-  const porCategoria = catalogoCategorias().map((c) => ({
+  const porCategoria = f.categorias.map((c) => ({
     id: c.id,
     nombre: c.nombre,
     ventas: listaProductos.filter((p) => p.categoria_id === c.id).reduce((s, p) => s + p.ventas, 0),
   }));
-  const ordenados = listaProductos.slice().sort((a, b) => b.unidades - a.unidades);
+  const vendidos = listaProductos.filter((p) => p.unidades > 0).sort((a, b) => b.unidades - a.unidades);
 
   return {
     actual: kpis(cuentasR, pedidosR),
@@ -157,38 +140,52 @@ export function getIndicadoresVentas(desde, hasta) {
     porDia,
     porFranja: Object.entries(franjas).map(([h, ventas]) => ({ franja: `${h}:00`, ventas })),
     porCategoria: porCategoria.sort((a, b) => b.ventas - a.ventas),
-    masVendidos: ordenados.slice(0, 5),
-    menosVendidos: ordenados.filter((p) => p.unidades > 0).slice(-5).reverse(),
+    masVendidos: vendidos.slice(0, 5),
+    menosVendidos: vendidos.slice(-5).reverse(),
     productos: listaProductos,
   };
 }
 
-/** GET /api/dashboard/embudo?desde&hasta */
-export function getEmbudo(desde, hasta) {
-  const { embudoDiario } = fuentes();
+/**
+ * Embudo de la carta. Cada sesión anónima (por día) cuenta una vez en cada etapa:
+ * vio la carta → abrió el detalle de un producto → lo agregó → envió el pedido con ese producto.
+ */
+function calcularEmbudo(f, desde, hasta) {
+  const sesiones = {};
+  for (const e of f.eventos) {
+    if (!enRango(e.fecha, desde, hasta)) continue;
+    const clave = `${claveDia(e.fecha)}|${e.sesion_id}`;
+    const s = (sesiones[clave] ||= { vio: false, det: new Set(), add: new Set(), env: new Set() });
+    if (e.tipo === TIPOS_EVENTO.VER_CARTA) s.vio = true;
+    if (e.tipo === TIPOS_EVENTO.VER_DETALLE) s.det.add(e.producto_id);
+    if (e.tipo === TIPOS_EVENTO.AGREGAR) s.add.add(e.producto_id);
+    if (e.tipo === TIPOS_EVENTO.ENVIAR) s.env.add(e.producto_id);
+  }
   const total = { sesiones: 0, detalle: 0, agregar: 0, enviar: 0 };
-  const porProducto = Object.fromEntries(catalogoProductos().map((p) => [p.id, [0, 0, 0]]));
-  Object.entries(embudoDiario).forEach(([clave, r]) => {
-    const [a, m, d] = clave.split('-').map(Number);
-    if (!enRango(new Date(a, m - 1, d), desde, hasta)) return;
-    total.sesiones += r.sesiones;
-    total.detalle += r.detalle;
-    total.agregar += r.agregar;
-    total.enviar += r.enviar;
-    Object.entries(r.productos).forEach(([id, f]) => {
-      if (!porProducto[id]) return;
-      porProducto[id][0] += f[0];
-      porProducto[id][1] += f[1];
-      porProducto[id][2] += f[2];
+  const porProducto = Object.fromEntries(f.productos.map((p) => [p.id, [0, 0, 0]]));
+  for (const s of Object.values(sesiones)) {
+    if (!s.vio) continue;
+    total.sesiones += 1;
+    const conAgregar = [...s.det].filter((id) => s.add.has(id));
+    const conEnvio = conAgregar.filter((id) => s.env.has(id));
+    if (s.det.size) total.detalle += 1;
+    if (conAgregar.length) total.agregar += 1;
+    if (conEnvio.length) total.enviar += 1;
+    s.det.forEach((id) => {
+      const fila = porProducto[id];
+      if (!fila) return;
+      fila[0] += 1;
+      if (s.add.has(id)) fila[1] += 1;
+      if (s.add.has(id) && s.env.has(id)) fila[2] += 1;
     });
-  });
+  }
   const etapas = [
     { etapa: 'Vio la carta', valor: total.sesiones },
     { etapa: 'Abrió el detalle de un producto', valor: total.detalle },
     { etapa: 'Agregó al pedido', valor: total.agregar },
     { etapa: 'Envió el pedido', valor: total.enviar },
   ];
-  const productosEmbudo = catalogoProductos()
+  const productosEmbudo = f.productos
     .map((p) => {
       const [detalle, agregar, enviar] = porProducto[p.id];
       return {
@@ -202,8 +199,20 @@ export function getEmbudo(desde, hasta) {
         conversion: detalle ? enviar / detalle : 0,
       };
     })
+    // Los productos retirados solo aparecen si alguien los miró en el periodo
+    .filter((p) => p.detalle > 0 || f.productos.find((x) => x.id === p.id)?.activo !== false)
     .sort((a, b) => b.detalle - a.detalle);
   return { etapas, productos: productosEmbudo };
+}
+
+/** GET /api/admin/dashboard -> indicadores de ventas (RF11) */
+export async function getIndicadoresVentas(desde, hasta) {
+  return calcularVentas(await cargarFuentes(desde, hasta), desde, hasta);
+}
+
+/** GET /api/admin/dashboard -> embudo de la carta (RF12) */
+export async function getEmbudo(desde, hasta) {
+  return calcularEmbudo(await cargarFuentes(desde, hasta), desde, hasta);
 }
 
 export const CLASIFICACION = {
@@ -225,13 +234,14 @@ export const ACCION = {
  * Popularidad alta: participación >= 70 % de la participación promedio (1/N).
  * Margen alto: margen unitario >= margen promedio ponderado por unidades.
  */
-export function getIngenieriaMenu(desde, hasta) {
-  const { productos: ventas } = getIndicadoresVentas(desde, hasta);
-  const embudo = getEmbudo(desde, hasta);
+export async function getIngenieriaMenu(desde, hasta) {
+  const f = await cargarFuentes(desde, hasta);
+  const { productos: ventas } = calcularVentas(f, desde, hasta);
+  const embudo = calcularEmbudo(f, desde, hasta);
   const conv = Object.fromEntries(embudo.productos.map((p) => [p.id, p]));
   const lista = ventas.filter((p) => p.unidades > 0);
   const totalUnidades = lista.reduce((s, p) => s + p.unidades, 0);
-  const umbralPopularidad = 0.7 * (1 / lista.length);
+  const umbralPopularidad = lista.length ? 0.7 * (1 / lista.length) : 0;
   const margenPromedio = lista.reduce((s, p) => s + (p.precio - p.costo) * p.unidades, 0) / (totalUnidades || 1);
   const conversionMedia =
     embudo.productos.reduce((s, p) => s + p.enviar, 0) / (embudo.productos.reduce((s, p) => s + p.detalle, 0) || 1);
@@ -267,8 +277,19 @@ export function getIngenieriaMenu(desde, hasta) {
   };
 }
 
-/** Rango de fechas disponible: desde el inicio del historial hasta hoy. */
-export function rangoDisponible() {
-  const { cuentas } = getHistorialSimulado();
-  return { min: inicioDelDia(cuentas[0].abierta_en), max: inicioDelDia(new Date()) };
+/** Rango de fechas disponible: desde el primer dato registrado hasta hoy. */
+export async function rangoDisponible() {
+  const hoy = inicioDelDia(new Date());
+  let primera = null;
+  if (MODO_API) {
+    ({ primera } = await http('/admin/dashboard/rango', { personal: true }));
+  } else {
+    const fechas = [
+      ...leer(COLECCIONES.CUENTAS).filter((c) => c.cerrada_en).map((c) => c.cerrada_en),
+      ...leer(COLECCIONES.EVENTOS).map((e) => e.fecha),
+    ].sort();
+    primera = fechas[0] ?? null;
+  }
+  const min = primera ? inicioDelDia(primera) : hoy;
+  return { min: min < hoy ? min : hoy, max: hoy };
 }

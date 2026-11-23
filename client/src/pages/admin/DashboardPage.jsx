@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getEmbudo, getIndicadoresVentas, getIngenieriaMenu, inicioDelDia, rangoDisponible } from '../../services/biApi';
-import { suscribir } from '../../services/store';
+import { suscribir } from '../../services/tiempoReal';
 import VentasTab from './bi/VentasTab';
 import EmbudoTab from './bi/EmbudoTab';
 import IngenieriaTab from './bi/IngenieriaTab';
@@ -28,15 +28,21 @@ const deInput = (s) => {
 
 /** Dashboard de inteligencia de negocio (OE3): ventas, embudo e ingeniería de menú. */
 export default function DashboardPage() {
-  const limites = useMemo(() => rangoDisponible(), []);
-  const hoy = limites.max;
+  const hoy = inicioDelDia(new Date());
+  const [limites, setLimites] = useState({ min: hoy, max: hoy });
   const [preset, setPreset] = useState(30);
   const [rango, setRango] = useState(() => ({ desde: new Date(hoy.getTime() - 29 * 86400000), hasta: hoy }));
   const [tab, setTab] = useState('ventas');
   const [version, setVersion] = useState(0);
 
-  // Recalcula al cerrar cuentas o registrar eventos en otras pestañas
+  // Recalcula cuando llegan pedidos o se cierran cuentas (Socket.IO o, en la demo, otras pestañas)
   useEffect(() => suscribir(() => setVersion((v) => v + 1)), []);
+
+  useEffect(() => {
+    rangoDisponible()
+      .then(setLimites)
+      .catch(() => {});
+  }, [version]);
 
   const elegirPreset = (dias) => {
     setPreset(dias);
@@ -51,13 +57,23 @@ export default function DashboardPage() {
     });
   };
 
-  const datos = useMemo(() => {
-    // eslint-disable-next-line no-unused-expressions
-    version;
-    if (tab === 'ventas') return getIndicadoresVentas(rango.desde, rango.hasta);
-    if (tab === 'embudo') return getEmbudo(rango.desde, rango.hasta);
-    return getIngenieriaMenu(rango.desde, rango.hasta);
-  }, [tab, rango, version]);
+  const [resultado, setResultado] = useState({ clave: null, datos: null, error: null });
+  const clave = `${tab}|${rango.desde.getTime()}|${rango.hasta.getTime()}`;
+
+  useEffect(() => {
+    let vigente = true;
+    const calcular =
+      tab === 'ventas' ? getIndicadoresVentas : tab === 'embudo' ? getEmbudo : getIngenieriaMenu;
+    calcular(rango.desde, rango.hasta)
+      .then((datos) => vigente && setResultado({ clave, datos, error: null }))
+      .catch((error) => vigente && setResultado({ clave, datos: null, error: error.message }));
+    return () => {
+      vigente = false;
+    };
+  }, [tab, rango, version, clave]);
+
+  // Mientras llegan los datos de otra pestaña o rango no se muestran los anteriores
+  const datos = resultado.clave === clave ? resultado.datos : null;
 
   return (
     <>
@@ -65,7 +81,7 @@ export default function DashboardPage() {
         <div>
           <h1>Dashboard</h1>
           <p className={a.bajada}>
-            Fork · 12 semanas de operación simulada más los pedidos registrados hoy en la aplicación.
+            El 10 · control de tu negocio
           </p>
         </div>
       </header>
@@ -108,9 +124,15 @@ export default function DashboardPage() {
         ))}
       </nav>
 
-      {tab === 'ventas' && <VentasTab datos={datos} />}
-      {tab === 'embudo' && <EmbudoTab key={`${rango.desde}-${rango.hasta}`} embudo={datos} />}
-      {tab === 'menu' && <IngenieriaTab matriz={datos} />}
+      {resultado.error && resultado.clave === clave && (
+        <p className={a.bajada} role="alert">
+          No se pudieron cargar los indicadores: {resultado.error}
+        </p>
+      )}
+      {!datos && !resultado.error && <p className={a.bajada}>Cargando indicadores…</p>}
+      {datos && tab === 'ventas' && <VentasTab datos={datos} />}
+      {datos && tab === 'embudo' && <EmbudoTab key={clave} embudo={datos} />}
+      {datos && tab === 'menu' && <IngenieriaTab matriz={datos} />}
     </>
   );
 }

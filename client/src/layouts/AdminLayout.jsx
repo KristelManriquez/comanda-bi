@@ -12,7 +12,7 @@ const NAV = [
 
 const OPERACION = [
   { to: '/cocina', texto: 'Pantalla de cocina', icono: IconChef },
-  { to: '/garzon', texto: 'Vista del garzón', icono: IconTray },
+  { to: '/garzon', texto: 'Atender mesas (garzón)', icono: IconTray },
 ];
 
 /** Estructura del módulo de administración (solo rol administrador). */
@@ -27,7 +27,7 @@ export default function AdminLayout({ usuario }) {
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
         <div className={styles.marca}>
-          <span className={styles.logo}>fork</span>
+          <span className={styles.logo}>El 10</span>
           <span className={styles.producto}>Comanda BI</span>
         </div>
         <nav className={styles.nav} aria-label="Administración">
@@ -50,7 +50,7 @@ export default function AdminLayout({ usuario }) {
           <span className={styles.avatar}>{usuario.nombre[0]}</span>
           <span className={styles.usuarioTexto}>
             <strong>{usuario.nombre}</strong>
-            <small>Administradora</small>
+            <small>Administración y garzón</small>
           </span>
           <button type="button" onClick={salir} className={styles.salir}>
             <IconLogout />

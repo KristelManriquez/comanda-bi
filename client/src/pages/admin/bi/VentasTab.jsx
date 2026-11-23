@@ -37,6 +37,7 @@ function Ranking({ titulo, bajada, items }) {
     <section className={a.card}>
       <h2 className={a.cardTitulo}>{titulo}</h2>
       <p className={a.cardBajada}>{bajada}</p>
+      {items.length === 0 && <p className={a.cardBajada}>Aún no hay ventas en este periodo.</p>}
       <ol className={styles.ranking}>
         {items.map((p, i) => (
           <li key={p.id}>

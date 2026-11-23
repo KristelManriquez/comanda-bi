@@ -5,7 +5,7 @@ export default function StatusScreen({ titulo, texto, cargando = false, children
   return (
     <main className={styles.screen} aria-busy={cargando}>
       <div className={styles.mark} aria-hidden="true">
-        fork
+        El 10
       </div>
       {cargando && <div className={styles.spinner} aria-hidden="true" />}
       <h1 className={styles.titulo}>{titulo}</h1>
