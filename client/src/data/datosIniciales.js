@@ -13,6 +13,8 @@
  *   categoria    -> id, nombre, orden, icono
  *   producto     -> id, categoria_id, nombre, descripcion, precio, costo,
  *                   imagen_url, disponible, destacado
+ *                   [opcion_titulo, opciones: lo que el comensal debe elegir,
+ *                    como la marca de la bebida o el sabor del jugo]
  */
 
 export const restaurante = {
@@ -107,6 +109,8 @@ const productosBase = [
     imagen_url: null,
     disponible: true,
     destacado: true,
+    opcion_titulo: 'Bebida',
+    opciones: ['Coca-Cola', 'Coca-Cola Zero', 'Sprite', 'Fanta'],
   },  {
     id: 202,
     categoria_id: 2,
@@ -116,6 +120,8 @@ const productosBase = [
     imagen_url: null,
     disponible: true,
     destacado: false,
+    opcion_titulo: 'Bebida',
+    opciones: ['Coca-Cola', 'Coca-Cola Zero', 'Sprite', 'Fanta'],
   },  {
     id: 203,
     categoria_id: 2,
@@ -125,6 +131,8 @@ const productosBase = [
     imagen_url: null,
     disponible: true,
     destacado: false,
+    opcion_titulo: 'Bebida',
+    opciones: ['Coca-Cola', 'Coca-Cola Zero', 'Sprite', 'Fanta'],
   },
 
   // Acompañamientos
@@ -192,11 +200,13 @@ const productosBase = [
     id: 501,
     categoria_id: 5,
     nombre: 'Bebida en lata',
-    descripcion: 'Coca-Cola, Coca-Cola Zero, Sprite o Fanta. Indica cuál en la nota.',
+    descripcion: 'Coca-Cola, Coca-Cola Zero, Sprite o Fanta.',
     precio: 1800,
     imagen_url: null,
     disponible: true,
     destacado: false,
+    opcion_titulo: 'Marca',
+    opciones: ['Coca-Cola', 'Coca-Cola Zero', 'Sprite', 'Fanta'],
   },  {
     id: 502,
     categoria_id: 5,
@@ -206,6 +216,8 @@ const productosBase = [
     imagen_url: null,
     disponible: true,
     destacado: false,
+    opcion_titulo: 'Tipo',
+    opciones: ['Con gas', 'Sin gas'],
   },  {
     id: 503,
     categoria_id: 5,
@@ -215,6 +227,8 @@ const productosBase = [
     imagen_url: null,
     disponible: true,
     destacado: false,
+    opcion_titulo: 'Sabor',
+    opciones: ['Frutilla', 'Piña', 'Mango'],
   },
 ];
 

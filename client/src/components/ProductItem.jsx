@@ -1,11 +1,13 @@
 import ProductImage from './ProductImage';
 import { IconPlus } from './Icons';
 import { formatCLP } from '../utils/format';
+import { conArticulo, requiereOpcion } from '../utils/opciones';
 import styles from './ProductItem.module.css';
 
 /**
  * Fila de producto en la carta. Toda la fila abre la ficha;
- * el botón "+" agrega una unidad directamente.
+ * el botón "+" agrega una unidad directamente (o abre la ficha si hay que
+ * elegir una opción, como la marca de la bebida).
  */
 export default function ProductItem({ producto, icono, enCarrito, onOpen, onQuickAdd }) {
   const agotado = !producto.disponible;
@@ -35,9 +37,11 @@ export default function ProductItem({ producto, icono, enCarrito, onOpen, onQuic
           className={`${styles.add} ${enCarrito > 0 ? styles.addCount : ''}`}
           onClick={() => onQuickAdd(producto)}
           aria-label={
-            enCarrito > 0
-              ? `Agregar otro ${producto.nombre}. Llevas ${enCarrito}`
-              : `Agregar ${producto.nombre} al pedido`
+            requiereOpcion(producto)
+              ? `Elegir ${conArticulo(producto)} y agregar ${producto.nombre}${enCarrito > 0 ? `. Llevas ${enCarrito}` : ''}`
+              : enCarrito > 0
+                ? `Agregar otro ${producto.nombre}. Llevas ${enCarrito}`
+                : `Agregar ${producto.nombre} al pedido`
           }
         >
           {enCarrito > 0 ? enCarrito : <IconPlus />}

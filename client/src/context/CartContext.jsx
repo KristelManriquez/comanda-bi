@@ -4,19 +4,20 @@ import { createContext, useContext, useEffect, useMemo, useReducer } from 'react
  * Carrito del comensal.
  * - Se guarda por mesa en localStorage, así no se pierde si el
  *   comensal recarga la página o bloquea el teléfono.
- * - Una "línea" es producto + nota: dos empanadas "sin aceituna" y
- *   una normal son dos líneas distintas, porque cocina las prepara distinto.
+ * - Una "línea" es producto + opción + nota: una Coca-Cola y una Sprite, o
+ *   dos hamburguesas "sin cebolla" y una normal, son líneas distintas,
+ *   porque la cocina las prepara distinto.
  */
 
 const CartContext = createContext(null);
 
-const claveLinea = (productoId, nota = '') => `${productoId}::${nota.trim().toLowerCase()}`;
+const claveLinea = (productoId, nota = '', opcion = '') => `${productoId}::${opcion}::${nota.trim().toLowerCase()}`;
 
 function cartReducer(state, action) {
   switch (action.type) {
     case 'agregar': {
-      const { producto, cantidad, nota = '' } = action;
-      const key = claveLinea(producto.id, nota);
+      const { producto, cantidad, nota = '', opcion = '' } = action;
+      const key = claveLinea(producto.id, nota, opcion);
       const existe = state.find((l) => l.key === key);
       if (existe) {
         return state.map((l) => (l.key === key ? { ...l, cantidad: l.cantidad + cantidad } : l));
@@ -30,6 +31,7 @@ function cartReducer(state, action) {
           precio: producto.precio,
           categoria_id: producto.categoria_id,
           cantidad,
+          opcion,
           nota: nota.trim(),
         },
       ];
@@ -74,8 +76,8 @@ export function CartProvider({ tokenMesa, children }) {
       lineas,
       cantidadTotal,
       total,
-      agregar: (producto, cantidad = 1, nota = '') =>
-        dispatch({ type: 'agregar', producto, cantidad, nota }),
+      agregar: (producto, cantidad = 1, nota = '', opcion = '') =>
+        dispatch({ type: 'agregar', producto, cantidad, nota, opcion }),
       cambiarCantidad: (key, cantidad) => dispatch({ type: 'cambiarCantidad', key, cantidad }),
       quitar: (key) => dispatch({ type: 'quitar', key }),
       vaciar: () => dispatch({ type: 'vaciar' }),

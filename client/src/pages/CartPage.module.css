@@ -170,3 +170,11 @@
   background: var(--violet-soft);
   color: var(--violet);
 }
+
+/* Opción elegida: marca de la bebida, sabor del jugo */
+.opcion {
+  margin-top: 2px;
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}

@@ -217,3 +217,16 @@
 .salirDiscreto:hover {
   color: #fff;
 }
+
+/* Opción elegida (marca, sabor): destacada para que la cocina no la pase por alto */
+.opcion {
+  display: block;
+  width: fit-content;
+  margin-top: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #ece3fb;
+  color: #36087a;
+  font-size: var(--fs-md);
+  font-weight: 700;
+}

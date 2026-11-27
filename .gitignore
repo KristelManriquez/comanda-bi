@@ -6,3 +6,8 @@ dist/
 .DS_Store
 .vscode/
 .idea/
+.env.test
+
+# Resultados de las pruebas
+test-results/
+e2e-reporte/

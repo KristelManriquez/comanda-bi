@@ -88,6 +88,7 @@ export default function CocinaPage({ usuario }) {
                     <span className={styles.cant}>{d.cantidad}</span>
                     <span>
                       {d.nombre}
+                      {d.opcion && <strong className={styles.opcion}>{d.opcion}</strong>}
                       {d.nota && <em className={styles.nota}>{d.nota}</em>}
                     </span>
                   </li>

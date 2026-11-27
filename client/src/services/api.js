@@ -12,6 +12,7 @@
 import { restaurante } from '../data/datosIniciales';
 import { categoriasActuales, mesasActuales, productosActuales } from './catalogo';
 import { ESTADOS_PEDIDO } from '../utils/pedido';
+import { validarOpcion } from '../utils/opciones';
 import { COLECCIONES, leer, escribir, siguienteId } from './store';
 
 import { http, MODO_API } from './http';
@@ -151,7 +152,7 @@ function cuentaAbiertaDe(mesa, cuentas) {
 
 /**
  * POST /api/pedidos
- * body: { token_mesa, items: [{ producto_id, cantidad, nota }] }
+ * body: { token_mesa, items: [{ producto_id, cantidad, opcion, nota }] }
  * El backend real calcula los precios desde la BD (nunca confía
  * en el precio que envía el cliente) y los copia a detalle_pedido.
  */
@@ -161,7 +162,7 @@ export async function crearPedido({ tokenMesa, items }) {
       method: 'POST',
       body: {
         token_mesa: tokenMesa,
-        items: items.map(({ producto_id, cantidad, nota }) => ({ producto_id, cantidad, nota })),
+        items: items.map(({ producto_id, cantidad, opcion, nota }) => ({ producto_id, cantidad, opcion, nota })),
       },
     });
     pedido.detalle.forEach((d) => registrarEvento(TIPOS_EVENTO.ENVIAR, { mesaId: pedido.mesa_id, productoId: d.producto_id }));
@@ -176,11 +177,13 @@ export async function crearPedido({ tokenMesa, items }) {
     if (!producto || !producto.disponible) {
       throw new Error(`${producto?.nombre ?? 'Un producto'} ya no está disponible`);
     }
+    const opcion = validarOpcion(producto, item.opcion);
     return {
       producto_id: producto.id,
       nombre: producto.nombre,
       cantidad: item.cantidad,
       precio_unitario: producto.precio,
+      opcion,
       nota: item.nota || '',
     };
   });

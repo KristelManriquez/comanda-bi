@@ -19,11 +19,29 @@ import f from './ui/Formulario.module.css';
 
 const cargar = getCatalogoAdmin;
 
-const PRODUCTO_NUEVO = { nombre: '', descripcion: '', categoria_id: '', precio: '', costo: '', disponible: true, destacado: false };
+const PRODUCTO_NUEVO = {
+  nombre: '',
+  descripcion: '',
+  categoria_id: '',
+  precio: '',
+  costo: '',
+  disponible: true,
+  destacado: false,
+  opcion_titulo: '',
+  opciones: '',
+};
 
-/** Formulario de producto: nombre, categoría, descripción, precio, costo y disponibilidad. */
+/**
+ * Formulario de producto: nombre, categoría, descripción, precio, costo,
+ * disponibilidad y la opción que el comensal debe elegir (marca, sabor).
+ */
 function ProductoForm({ inicial, categorias, onClose, onGuardado }) {
-  const [datos, setDatos] = useState(inicial);
+  // Las opciones se editan como texto separado por comas
+  const [datos, setDatos] = useState(() => ({
+    ...inicial,
+    opcion_titulo: inicial.opcion_titulo ?? '',
+    opciones: Array.isArray(inicial.opciones) ? inicial.opciones.join(', ') : (inicial.opciones ?? ''),
+  }));
   const [error, setError] = useState(null);
   const set = (campo) => (e) => {
     setDatos((d) => ({ ...d, [campo]: e?.target ? e.target.value : e }));
@@ -92,6 +110,22 @@ function ProductoForm({ inicial, categorias, onClose, onGuardado }) {
             </strong>
           </p>
         )}
+        <Campo
+          etiqueta="Opción obligatoria (opcional)"
+          error={err('opcion_titulo')}
+          ancho="medio"
+          ayuda="Lo que el comensal debe elegir, por ejemplo Marca o Sabor."
+        >
+          <input value={datos.opcion_titulo} onChange={set('opcion_titulo')} maxLength={30} placeholder="Ej: Marca" />
+        </Campo>
+        <Campo
+          etiqueta="Opciones"
+          error={err('opciones')}
+          ancho="medio"
+          ayuda="Separadas por coma. Sin elegir una, no se puede agregar al pedido."
+        >
+          <input value={datos.opciones} onChange={set('opciones')} placeholder="Ej: Coca-Cola, Sprite, Fanta" />
+        </Campo>
         <Casilla
           etiqueta="Disponible"
           descripcion="Si no, aparece como agotado."
@@ -251,9 +285,14 @@ export default function CartaAdminPage() {
                         <tr key={p.id}>
                           <td>
                             <strong>{p.nombre}</strong>
-                            {p.destacado && (
+                            {(p.destacado || p.opciones?.length > 0) && (
                               <span className={styles.chips}>
-                                <span className={a.chip}>Destacado</span>
+                                {p.destacado && <span className={a.chip}>Destacado</span>}
+                                {p.opciones?.length > 0 && (
+                                  <span className={a.chip} title={p.opciones.join(', ')}>
+                                    Elegir {p.opcion_titulo.toLowerCase()}: {p.opciones.length}
+                                  </span>
+                                )}
                               </span>
                             )}
                             <span className={styles.descripcion}>{p.descripcion}</span>

@@ -369,3 +369,8 @@
 .marca {
   text-transform: none;
 }
+
+/* Opción elegida: marca de la bebida, sabor del jugo */
+.opcion {
+  font-weight: 700;
+}
