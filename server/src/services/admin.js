@@ -78,7 +78,8 @@ export async function eliminarCategoria(id) {
 /** Todos los productos, con su costo e incluidos los retirados de la carta. */
 export async function getProductos() {
   const { rows } = await query(
-    `SELECT id, categoria_id, nombre, descripcion, precio, costo, imagen_url, disponible, destacado, activo
+    `SELECT id, categoria_id, nombre, descripcion, precio, costo, imagen_url, disponible, destacado, activo,
+            opcion_titulo, opciones
      FROM producto ORDER BY categoria_id NULLS LAST, id`
   );
   return rows;
@@ -94,6 +95,7 @@ function validarProducto(datos) {
   if (!Number.isInteger(precio) || precio <= 0) throw errorHttp(400, 'El precio debe ser un número entero mayor que cero', 'precio');
   if (!Number.isInteger(costo) || costo < 0) throw errorHttp(400, 'El costo debe ser un número entero, cero o mayor', 'costo');
   if (costo >= precio) throw errorHttp(400, 'El costo debe ser menor que el precio', 'costo');
+  const { opcion_titulo, opciones } = validarOpciones(datos?.opcion_titulo, datos?.opciones);
   return {
     nombre,
     descripcion: texto(datos.descripcion).slice(0, 160),
@@ -102,7 +104,28 @@ function validarProducto(datos) {
     costo,
     disponible: datos.disponible !== false,
     destacado: Boolean(datos.destacado),
+    opcion_titulo,
+    opciones,
   };
+}
+
+/**
+ * Opción obligatoria del producto: un título ("Marca", "Sabor") y entre 2 y 10
+ * opciones. Ambos vacíos = el producto se pide sin elegir nada.
+ */
+function validarOpciones(titulo, opciones) {
+  const t = texto(titulo);
+  const lista = (Array.isArray(opciones) ? opciones : String(opciones ?? '').split(','))
+    .map((o) => texto(o))
+    .filter(Boolean);
+  if (!t && lista.length === 0) return { opcion_titulo: '', opciones: [] };
+  if (!t) throw errorHttp(400, 'Escribe qué debe elegir el comensal (por ejemplo, Marca o Sabor)', 'opcion_titulo');
+  if (t.length > 30) throw errorHttp(400, 'El título puede tener hasta 30 caracteres', 'opcion_titulo');
+  if (lista.length < 2) throw errorHttp(400, 'Escribe al menos dos opciones, separadas por coma', 'opciones');
+  if (lista.length > 10) throw errorHttp(400, 'Puedes escribir hasta 10 opciones', 'opciones');
+  if (lista.some((o) => o.length > 30)) throw errorHttp(400, 'Cada opción puede tener hasta 30 caracteres', 'opciones');
+  if (new Set(lista.map((o) => o.toLowerCase())).size !== lista.length) throw errorHttp(400, 'Hay opciones repetidas', 'opciones');
+  return { opcion_titulo: t, opciones: lista };
 }
 
 export async function guardarProducto(id, datos) {
@@ -115,21 +138,21 @@ export async function guardarProducto(id, datos) {
   );
   if (repetidos[0]) throw errorHttp(409, 'Ya existe un producto con ese nombre en la carta', 'nombre');
 
-  const valores = [p.categoria_id, p.nombre, p.descripcion, p.precio, p.costo, p.disponible, p.destacado];
+  const valores = [p.categoria_id, p.nombre, p.descripcion, p.precio, p.costo, p.disponible, p.destacado, p.opcion_titulo, p.opciones];
   let producto;
   if (id) {
     const { rows } = await query(
       `UPDATE producto SET categoria_id = $1, nombre = $2, descripcion = $3, precio = $4, costo = $5,
-         disponible = $6, destacado = $7
-       WHERE id = $8 RETURNING *`,
+         disponible = $6, destacado = $7, opcion_titulo = $8, opciones = $9
+       WHERE id = $10 RETURNING *`,
       [...valores, id]
     );
     if (!rows[0]) throw errorHttp(404, 'El producto no existe');
     producto = rows[0];
   } else {
     const { rows } = await query(
-      `INSERT INTO producto (categoria_id, nombre, descripcion, precio, costo, disponible, destacado)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      `INSERT INTO producto (categoria_id, nombre, descripcion, precio, costo, disponible, destacado, opcion_titulo, opciones)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
       valores
     );
     producto = rows[0];

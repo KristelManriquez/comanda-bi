@@ -15,6 +15,7 @@
 import * as inicial from '../data/datosIniciales';
 import { COLECCIONES, leer, escribir, siguienteId } from './store';
 import { http, MODO_API } from './http';
+import { normalizarOpciones } from '../utils/opciones';
 
 const admin = (ruta, opciones = {}) => http(`/admin${ruta}`, { ...opciones, personal: true });
 
@@ -133,6 +134,7 @@ export async function guardarProducto(datos) {
   if (!Number.isInteger(precio) || precio <= 0) throw error('El precio debe ser un número entero mayor que cero', 'precio');
   if (!Number.isInteger(costo) || costo < 0) throw error('El costo debe ser un número entero, cero o mayor', 'costo');
   if (costo >= precio) throw error('El costo debe ser menor que el precio', 'costo');
+  const opciones = normalizarOpciones(datos.opcion_titulo, datos.opciones);
   if (lista.some((p) => p.id !== datos.id && p.activo !== false && p.nombre.toLowerCase() === nombre.toLowerCase())) {
     throw error('Ya existe un producto con ese nombre en la carta', 'nombre');
   }
@@ -145,6 +147,7 @@ export async function guardarProducto(datos) {
     costo,
     disponible: Boolean(datos.disponible),
     destacado: Boolean(datos.destacado),
+    ...opciones,
   };
   if (datos.id) {
     Object.assign(lista.find((p) => p.id === datos.id), campos);

@@ -110,6 +110,7 @@ export default function GarzonPage({ usuario }) {
                     {p.detalle.map((d, i) => (
                       <li key={i}>
                         <strong>{d.cantidad}×</strong> {d.nombre}
+                        {d.opcion && <b className={styles.opcion}> · {d.opcion}</b>}
                         {d.nota && <em>“{d.nota}”</em>}
                       </li>
                     ))}

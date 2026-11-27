@@ -10,4 +10,8 @@ export default defineConfig({
     host: true,
     port: 5173,
   },
+  // Vitest: pruebas unitarias en src (las de sistema, en e2e/, las ejecuta Playwright)
+  test: {
+    include: ['src/**/*.test.js'],
+  },
 })

@@ -84,7 +84,7 @@ function kpis(cuentas, pedidos) {
   };
 }
 
-function calcularVentas(f, desde, hasta) {
+export function calcularVentas(f, desde, hasta) {
   const dias = Math.round((hasta - desde) / DIA_MS) + 1;
   const prevHasta = sumarDias(desde, -1);
   const prevDesde = sumarDias(desde, -dias);
@@ -150,7 +150,7 @@ function calcularVentas(f, desde, hasta) {
  * Embudo de la carta. Cada sesión anónima (por día) cuenta una vez en cada etapa:
  * vio la carta → abrió el detalle de un producto → lo agregó → envió el pedido con ese producto.
  */
-function calcularEmbudo(f, desde, hasta) {
+export function calcularEmbudo(f, desde, hasta) {
   const sesiones = {};
   for (const e of f.eventos) {
     if (!enRango(e.fecha, desde, hasta)) continue;
@@ -235,7 +235,11 @@ export const ACCION = {
  * Margen alto: margen unitario >= margen promedio ponderado por unidades.
  */
 export async function getIngenieriaMenu(desde, hasta) {
-  const f = await cargarFuentes(desde, hasta);
+  return calcularIngenieria(await cargarFuentes(desde, hasta), desde, hasta);
+}
+
+/** Cálculo de la matriz con datos ya cargados (función pura, probada con Vitest). */
+export function calcularIngenieria(f, desde, hasta) {
   const { productos: ventas } = calcularVentas(f, desde, hasta);
   const embudo = calcularEmbudo(f, desde, hasta);
   const conv = Object.fromEntries(embudo.productos.map((p) => [p.id, p]));

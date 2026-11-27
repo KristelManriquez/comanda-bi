@@ -3,6 +3,7 @@ import ProductImage from './ProductImage';
 import QuantityStepper from './QuantityStepper';
 import { IconClose } from './Icons';
 import { formatCLP } from '../utils/format';
+import { conArticulo, requiereOpcion } from '../utils/opciones';
 import styles from './ProductSheet.module.css';
 
 /**
@@ -14,12 +15,17 @@ export default function ProductSheet({ producto, icono, onClose, onAdd }) {
   const dialogRef = useRef(null);
   const [cantidad, setCantidad] = useState(1);
   const [nota, setNota] = useState('');
+  const [opcion, setOpcion] = useState('');
+  const [faltaOpcion, setFaltaOpcion] = useState(false);
+  const opcionesRef = useRef(null);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (producto && dialog && !dialog.open) {
       setCantidad(1);
       setNota('');
+      setOpcion('');
+      setFaltaOpcion(false);
       dialog.showModal();
     }
   }, [producto]);
@@ -33,9 +39,23 @@ export default function ProductSheet({ producto, icono, onClose, onAdd }) {
     if (e.target === dialogRef.current) cerrar();
   };
 
+  const conOpciones = requiereOpcion(producto);
+
+  // Sin la opción elegida (marca, sabor) no se agrega: se avisa junto a las opciones
   const agregar = () => {
-    onAdd(producto, cantidad, nota);
+    if (conOpciones && !opcion) {
+      setFaltaOpcion(true);
+      opcionesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      opcionesRef.current?.querySelector('input')?.focus({ preventScroll: true });
+      return;
+    }
+    onAdd(producto, cantidad, nota, opcion);
     cerrar();
+  };
+
+  const elegir = (valor) => {
+    setOpcion(valor);
+    setFaltaOpcion(false);
   };
 
   return (
@@ -61,6 +81,38 @@ export default function ProductSheet({ producto, icono, onClose, onAdd }) {
             </h2>
             <p className={styles.descripcion}>{producto.descripcion}</p>
             <p className={styles.precio}>{formatCLP(producto.precio)}</p>
+
+            {conOpciones && (
+              <fieldset
+                ref={opcionesRef}
+                className={`${styles.opciones} ${faltaOpcion ? styles.opcionesError : ''}`}
+                aria-describedby={faltaOpcion ? 'opcion-error' : undefined}
+              >
+                <legend className={styles.opcionesTitulo}>
+                  {producto.opcion_titulo} <span className={styles.obligatorio}>Obligatorio</span>
+                </legend>
+                <div className={styles.chips}>
+                  {producto.opciones.map((o) => (
+                    <label key={o} className={`${styles.chip} ${opcion === o ? styles.chipActivo : ''}`}>
+                      <input
+                        type="radio"
+                        name="opcion"
+                        value={o}
+                        checked={opcion === o}
+                        onChange={() => elegir(o)}
+                        required
+                      />
+                      {o}
+                    </label>
+                  ))}
+                </div>
+                {faltaOpcion && (
+                  <p id="opcion-error" className={styles.opcionError} role="alert">
+                    Elige {conArticulo(producto)} para agregarlo a tu pedido.
+                  </p>
+                )}
+              </fieldset>
+            )}
 
             <label className={styles.notaLabel} htmlFor="nota">
               Nota para la cocina <span>(opcional)</span>

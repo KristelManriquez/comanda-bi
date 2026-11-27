@@ -31,6 +31,10 @@ CREATE TABLE producto (
   imagen_url   TEXT,
   disponible   BOOLEAN      NOT NULL DEFAULT TRUE,
   destacado    BOOLEAN      NOT NULL DEFAULT FALSE,
+  -- Opción que el comensal debe elegir (marca de la bebida, sabor del jugo).
+  -- Sin opciones ('{}'), el producto se pide directamente.
+  opcion_titulo VARCHAR(30) NOT NULL DEFAULT '',
+  opciones     TEXT[]       NOT NULL DEFAULT '{}',
   -- Los productos no se borran: se retiran de la carta para conservar sus ventas
   activo       BOOLEAN      NOT NULL DEFAULT TRUE
 );
@@ -69,6 +73,8 @@ CREATE TABLE detalle_pedido (
   cantidad        INT          NOT NULL CHECK (cantidad BETWEEN 1 AND 50),
   -- El precio se copia al momento del pedido: si cambia la carta, las ventas pasadas no cambian
   precio_unitario INT          NOT NULL,
+  -- Opción elegida (por ejemplo, la marca de la bebida); vacía si el producto no tiene opciones
+  opcion          VARCHAR(30)  NOT NULL DEFAULT '',
   nota            VARCHAR(140) NOT NULL DEFAULT ''
 );
 

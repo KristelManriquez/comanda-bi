@@ -12,7 +12,7 @@ export default function MenuHeader({ restaurante, mesa }) {
           </span>
         </div>
 
-        <h1 className={styles.wordmark}>{restaurante.nombre.toLowerCase()}</h1>
+        <h1 className={styles.wordmark}>{restaurante.nombre}</h1>
         <p className={styles.bajada}>{restaurante.bajada}</p>
 
         <ul className={styles.info}>

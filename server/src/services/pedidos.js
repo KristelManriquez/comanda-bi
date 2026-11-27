@@ -13,7 +13,7 @@ export function errorHttp(status, mensaje, campo) {
 /**
  * Consulta base de un pedido con la misma forma que usa el front:
  * { id, cuenta_id, mesa_id, mesa_numero, token_mesa, estado, creado_en,
- *   recibido_en, garzon_id, total, detalle: [{ producto_id, nombre, cantidad, precio_unitario, nota }] }
+ *   recibido_en, garzon_id, total, detalle: [{ producto_id, nombre, cantidad, precio_unitario, opcion, nota }] }
  * recibido_en y garzon_id salen del historial de estados.
  */
 export const SELECT_PEDIDO = `
@@ -22,7 +22,7 @@ export const SELECT_PEDIDO = `
          SUM(d.cantidad * d.precio_unitario)::int AS total,
          json_agg(json_build_object(
            'producto_id', d.producto_id, 'nombre', pr.nombre, 'cantidad', d.cantidad,
-           'precio_unitario', d.precio_unitario, 'nota', d.nota
+           'precio_unitario', d.precio_unitario, 'opcion', d.opcion, 'nota', d.nota
          ) ORDER BY d.id) AS detalle
   FROM pedido p
   JOIN cuenta c ON c.id = p.cuenta_id
@@ -45,12 +45,26 @@ export const getMesaPorToken = (token) => mesaActivaPorToken({ query }, token);
 export async function getCarta() {
   const { rows: categorias } = await query('SELECT id, nombre, orden, icono FROM categoria ORDER BY orden');
   const { rows: productos } = await query(
-    `SELECT id, categoria_id, nombre, descripcion, precio, imagen_url, disponible, destacado
+    `SELECT id, categoria_id, nombre, descripcion, precio, imagen_url, disponible, destacado, opcion_titulo, opciones
      FROM producto WHERE activo ORDER BY id`
   );
   return categorias
     .map((c) => ({ ...c, productos: productos.filter((p) => p.categoria_id === c.id) }))
     .filter((c) => c.productos.length > 0);
+}
+
+/**
+ * Opción obligatoria de un producto (marca de la bebida, sabor del jugo).
+ * Debe ser una de las que ofrece la carta; si el producto no tiene opciones, se ignora.
+ */
+function opcionElegida(producto, opcion) {
+  if (!producto.opciones?.length) return '';
+  const elegida = producto.opciones.find((o) => o === String(opcion ?? '').trim());
+  if (!elegida) {
+    const titulo = (producto.opcion_titulo || 'opción').toLowerCase();
+    throw errorHttp(400, `Elige ${titulo.endsWith('a') ? 'la' : 'el'} ${titulo} de ${producto.nombre}`);
+  }
+  return elegida;
 }
 
 /**
@@ -66,7 +80,7 @@ export async function crearPedido({ tokenMesa, items }) {
 
     const ids = items.map((i) => Number(i.producto_id));
     const { rows: productos } = await db.query(
-      'SELECT id, nombre, precio, disponible, activo FROM producto WHERE id = ANY($1::int[])',
+      'SELECT id, nombre, precio, disponible, activo, opcion_titulo, opciones FROM producto WHERE id = ANY($1::int[])',
       [ids]
     );
     const lineas = items.map((item) => {
@@ -76,7 +90,7 @@ export async function crearPedido({ tokenMesa, items }) {
         throw errorHttp(409, `${producto?.nombre ?? 'Un producto'} ya no está disponible`);
       }
       if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > 50) throw errorHttp(400, 'Cantidad no válida');
-      return { producto, cantidad, nota: String(item.nota ?? '').trim().slice(0, 140) };
+      return { producto, cantidad, opcion: opcionElegida(producto, item.opcion), nota: String(item.nota ?? '').trim().slice(0, 140) };
     });
     const total = lineas.reduce((s, l) => s + l.producto.precio * l.cantidad, 0);
 
@@ -94,8 +108,8 @@ export async function crearPedido({ tokenMesa, items }) {
     const id = rows[0].id;
     for (const l of lineas) {
       await db.query(
-        'INSERT INTO detalle_pedido (pedido_id, producto_id, cantidad, precio_unitario, nota) VALUES ($1, $2, $3, $4, $5)',
-        [id, l.producto.id, l.cantidad, l.producto.precio, l.nota]
+        'INSERT INTO detalle_pedido (pedido_id, producto_id, cantidad, precio_unitario, opcion, nota) VALUES ($1, $2, $3, $4, $5, $6)',
+        [id, l.producto.id, l.cantidad, l.producto.precio, l.opcion, l.nota]
       );
     }
     await db.query(`INSERT INTO historial_estado_pedido (pedido_id, estado) VALUES ($1, 'solicitado')`, [id]);

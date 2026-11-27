@@ -111,6 +111,7 @@ export default function OrderPage() {
                 <span className={styles.cant}>{d.cantidad}×</span>
                 <span className={styles.itemNombre}>
                   {d.nombre}
+                  {d.opcion && <strong className={styles.opcion}> · {d.opcion}</strong>}
                   {d.nota && <em>“{d.nota}”</em>}
                 </span>
                 <span className={styles.itemPrecio}>{formatCLP(d.precio_unitario * d.cantidad)}</span>

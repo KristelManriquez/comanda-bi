@@ -23,7 +23,7 @@ export default function CartPage() {
     try {
       const pedido = await crearPedido({
         tokenMesa: token,
-        items: lineas.map((l) => ({ producto_id: l.producto_id, cantidad: l.cantidad, nota: l.nota })),
+        items: lineas.map((l) => ({ producto_id: l.producto_id, cantidad: l.cantidad, opcion: l.opcion ?? '', nota: l.nota })),
       });
       vaciar();
       navigate(`/mesa/${token}/pedido/${pedido.id}`, { replace: true, state: { recienEnviado: true } });
@@ -61,6 +61,7 @@ export default function CartPage() {
             <li key={l.key} className={styles.linea}>
               <div className={styles.lineaInfo}>
                 <h3 className={styles.nombre}>{l.nombre}</h3>
+                {l.opcion && <p className={styles.opcion}>{l.opcion}</p>}
                 {l.nota && <p className={styles.nota}>“{l.nota}”</p>}
                 <p className={styles.unitario}>{formatCLP(l.precio)} c/u</p>
               </div>

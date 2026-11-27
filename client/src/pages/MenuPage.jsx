@@ -7,6 +7,7 @@ import MenuHeader from '../components/MenuHeader';
 import CategoryTabs from '../components/CategoryTabs';
 import FeaturedStrip from '../components/FeaturedStrip';
 import ProductItem from '../components/ProductItem';
+import { requiereOpcion } from '../utils/opciones';
 import ProductSheet from '../components/ProductSheet';
 import CartBar from '../components/CartBar';
 import ActiveOrderBanner from '../components/ActiveOrderBanner';
@@ -161,11 +162,15 @@ export default function MenuPage() {
     registrarEvento(TIPOS_EVENTO.VER_DETALLE, { mesaId: mesa.id, productoId: producto.id });
   };
 
-  const agregarAlPedido = (producto, cantidad = 1, nota = '') => {
-    agregar(producto, cantidad, nota);
+  const agregarAlPedido = (producto, cantidad = 1, nota = '', opcion = '') => {
+    agregar(producto, cantidad, nota, opcion);
     registrarEvento(TIPOS_EVENTO.AGREGAR, { mesaId: mesa.id, productoId: producto.id });
-    mostrarToast(cantidad > 1 ? `${cantidad} × ${producto.nombre} agregados` : `${producto.nombre} agregado`);
+    const nombre = opcion ? `${producto.nombre} (${opcion})` : producto.nombre;
+    mostrarToast(cantidad > 1 ? `${cantidad} × ${nombre} agregados` : `${nombre} agregado`);
   };
+
+  // El "+" rápido no sirve si hay que elegir marca o sabor: abre la ficha para elegir
+  const agregarRapido = (producto) => (requiereOpcion(producto) ? abrirProducto(producto) : agregarAlPedido(producto));
 
   const iconoPorCategoria = useMemo(() => {
     const mapa = {};
@@ -223,7 +228,7 @@ export default function MenuPage() {
                   icono={categoria.icono}
                   enCarrito={cantidadDeProducto(producto.id)}
                   onOpen={abrirProducto}
-                  onQuickAdd={(p) => agregarAlPedido(p)}
+                  onQuickAdd={agregarRapido}
                 />
               ))}
             </ul>
